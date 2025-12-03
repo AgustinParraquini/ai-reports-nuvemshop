@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Noviembre 2025 - Nuvem Chat</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #010B23; min-height: 100vh; color: #1a1a2e; }
+        .container { width: 100vw; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 30px 20px; }
+        .slide { width: 100%; max-width: 1100px; min-height: 85vh; background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); padding: 40px 50px; display: flex; flex-direction: column; }
+        .slide.dark { background: #010B23; color: white; }
+        .header { margin-bottom: 20px; }
+        .tag { display: inline-block; background: #59A9FF; color: white; padding: 6px 14px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+        .tag.green { background: #00965E; }
+        .tag.red { background: #EC3F41; }
+        .tag.orange { background: #FF7A27; }
+        .tag.dark { background: #2C3357; }
+        h1 { font-size: 32px; font-weight: 700; color: #010B23; margin-bottom: 6px; line-height: 1.2; }
+        .dark h1 { color: white; }
+        h2 { font-size: 16px; color: #6B7280; font-weight: 400; }
+        .dark h2 { color: #9CA3AF; }
+        h3 { font-size: 15px; font-weight: 600; color: #010B23; margin-bottom: 8px; }
+        .content { flex: 1; }
+        .metrics { display: grid; gap: 16px; margin-bottom: 20px; }
+        .metrics-4 { grid-template-columns: repeat(4, 1fr); }
+        .metrics-3 { grid-template-columns: repeat(3, 1fr); }
+        .metrics-2 { grid-template-columns: repeat(2, 1fr); }
+        .metric { background: #F3F4F6; border-radius: 12px; padding: 20px; }
+        .metric.blue { background: linear-gradient(135deg, #59A9FF 0%, #0050C3 100%); color: white; }
+        .metric.green { background: linear-gradient(135deg, #00965E 0%, #00CD4B 100%); color: white; }
+        .metric.red { background: linear-gradient(135deg, #EC3F41 0%, #C3355D 100%); color: white; }
+        .metric.orange { background: linear-gradient(135deg, #FF7A27 0%, #EC3F41 100%); color: white; }
+        .metric.dark { background: #010B23; color: white; }
+        .metric-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 4px; }
+        .metric-value { font-size: 32px; font-weight: 700; line-height: 1.1; }
+        .metric-sub { font-size: 12px; opacity: 0.85; margin-top: 4px; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+        th { background: #010B23; color: white; padding: 12px 14px; text-align: left; font-weight: 600; }
+        th:first-child { border-radius: 8px 0 0 0; }
+        th:last-child { border-radius: 0 8px 0 0; }
+        td { padding: 12px 14px; border-bottom: 1px solid #E5E7EB; }
+        tr:hover { background: #F9FAFB; }
+        .good { color: #00965E; font-weight: 600; }
+        .bad { color: #EC3F41; font-weight: 600; }
+        .warn { color: #FF7A27; font-weight: 600; }
+        .box { background: #F3F4F6; border-radius: 12px; padding: 16px; margin: 10px 0; }
+        .box.blue { background: #EFF6FF; border-left: 4px solid #59A9FF; }
+        .box.green { background: #ECFDF5; border-left: 4px solid #00965E; }
+        .box.red { background: #FEF2F2; border-left: 4px solid #EC3F41; }
+        .box.orange { background: #FFF7ED; border-left: 4px solid #FF7A27; }
+        .nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; background: white; padding: 10px 20px; border-radius: 50px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .btn { background: #010B23; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .btn:hover:not(:disabled) { background: #59A9FF; }
+        .btn:disabled { background: #D1D5DB; cursor: not-allowed; }
+        .indicator { color: #010B23; font-weight: 600; font-size: 14px; min-width: 80px; text-align: center; }
+        .grid { display: grid; gap: 16px; }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .flow { display: flex; align-items: center; justify-content: space-between; margin: 20px 0; }
+        .flow-item { text-align: center; flex: 1; padding: 15px; background: #F3F4F6; border-radius: 12px; margin: 0 5px; }
+        .flow-arrow { color: #59A9FF; font-size: 24px; font-weight: bold; }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 6px; line-height: 1.5; }
+        .flag { font-size: 28px; margin-right: 10px; }
+        .country-header { display: flex; align-items: center; margin-bottom: 15px; }
+        .small { font-size: 12px; color: #6B7280; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+
+        const { useState, useEffect } = React;
+        
+        function App() {
+            const [slide, setSlide] = useState(0);
+            const slides = [
+                <S01/>,<S02/>,<S03/>,<S04/>,<S05/>,<S06/>,<S07/>,<S08/>,<S09/>,<S10/>,
+                <S11/>,<S12/>,<S13/>,<S14/>,<S15/>,<S16/>,<S17/>,<S18/>,<S19/>,<S20/>,
+                <S21/>,<S22/>,<S23/>,<S24/>,<S25/>,<S26/>,<S27/>,<S28/>,<S29/>,<S30/>,
+                <S31/>,<S32/>
+            ];
+            const next = () => slide < slides.length - 1 && setSlide(slide + 1);
+            const prev = () => slide > 0 && setSlide(slide - 1);
+            useEffect(() => {
+                const h = (e) => { if (e.key === "ArrowRight") next(); if (e.key === "ArrowLeft") prev(); };
+                window.addEventListener("keydown", h);
+                return () => window.removeEventListener("keydown", h);
+            });
+            return (<div><div className="container">{slides[slide]}</div><div className="nav"><button className="btn" onClick={prev} disabled={slide===0}>‹</button><span className="indicator">{slide+1} / {slides.length}</span><button className="btn" onClick={next} disabled={slide===slides.length-1}>›</button></div></div>);
+        }
+
+        // S01 - Portada
+        function S01() {
+            return (
+                <div className="slide dark" style={{justifyContent: "center", textAlign: "center"}}>
+                    <div>
+                        <div style={{fontSize: 14, color: "#59A9FF", marginBottom: 20, letterSpacing: 2}}>NUVEM CHAT</div>
+                        <h1 style={{fontSize: 52, marginBottom: 16}}>Reporte Noviembre 2025</h1>
+                        <h2 style={{fontSize: 18, marginBottom: 50}}>Analisis completo de metricas, churn y proyecciones</h2>
+                        <div className="metrics metrics-4" style={{maxWidth: 900, margin: "0 auto"}}>
+                            <div className="metric green"><div className="metric-label">Revenue</div><div className="metric-value">$8,094</div><div className="metric-sub">cobrado</div></div>
+                            <div className="metric blue"><div className="metric-label">New Payments</div><div className="metric-value">149</div><div className="metric-sub">+116% vs Oct</div></div>
+                            <div className="metric red"><div className="metric-label">Churn</div><div className="metric-value">21.1%</div><div className="metric-sub">155 merchants</div></div>
+                            <div className="metric orange"><div className="metric-label">Pendiente</div><div className="metric-value">$3,987</div><div className="metric-sub">560 merchants</div></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S02 - Que es Nuvem Chat
+        function S02() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag">Contexto</span>
+                        <h1>Que es Nuvem Chat?</h1>
+                    </div>
+                    <div className="content">
+                        <div className="box blue" style={{fontSize: 16, marginBottom: 20}}>
+                            <p><strong>Nuvem Chat</strong> es el producto de AI Conversacional de Tiendanube que permite a los merchants automatizar la atencion al cliente via WhatsApp usando Inteligencia Artificial.</p>
+                        </div>
+                        <div className="metrics metrics-2" style={{marginBottom: 20}}>
+                            <div className="box"><h3>Como funciona?</h3>
+                                <ul>
+                                    <li>El merchant conecta su WhatsApp</li>
+                                    <li>Configura respuestas y contenido</li>
+                                    <li>La IA responde automaticamente a clientes</li>
+                                    <li>Se cobra por conversaciones de AI</li>
+                                </ul>
+                            </div>
+                            <div className="box"><h3>Modelo de negocio</h3>
+                                <ul>
+                                    <li><strong>Free Trial:</strong> 7 dias gratis</li>
+                                    <li><strong>Facturacion:</strong> Por uso (conversaciones)</li>
+                                    <li><strong>Ciclo:</strong> Mensual</li>
+                                    <li><strong>Precio:</strong> Variable por plan y pais</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div className="box green">
+                            <h3 style={{color: "#00965E"}}>Metricas clave de este reporte</h3>
+                            <ul>
+                                <li><strong>AI Chats Facturados:</strong> Conversaciones cobradas en la factura (Invoice Count Conversation)</li>
+                                <li><strong>Chats en Trial:</strong> Conversaciones durante los 7 dias gratis (no se cobran)</li>
+                                <li><strong>Revenue:</strong> Lo que cobramos por el servicio (en USD)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S03 - Historia de Noviembre
+        function S03() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag">Contexto</span>
+                        <h1>La historia de Noviembre</h1>
+                        <h2>Que paso con los merchants de Octubre a Noviembre?</h2>
+                    </div>
+                    <div className="content">
+                        <div className="flow">
+                            <div className="flow-item"><div style={{fontSize: 11, color: "#6B7280"}}>Pagaron Oct</div><div style={{fontSize: 32, fontWeight: 700}}>736</div></div>
+                            <div className="flow-arrow">→</div>
+                            <div className="flow-item" style={{background: "#ECFDF5"}}><div style={{fontSize: 11}}>Tienen factura Nov</div><div style={{fontSize: 32, fontWeight: 700, color: "#00965E"}}>564</div></div>
+                            <div className="flow-arrow">→</div>
+                            <div className="flow-item" style={{background: "#FEF2F2"}}><div style={{fontSize: 11}}>Sin factura Nov</div><div style={{fontSize: 32, fontWeight: 700, color: "#EC3F41"}}>172</div></div>
+                        </div>
+                        <div className="grid grid-2" style={{marginTop: 20}}>
+                            <div className="box green"><h3 style={{color: "#00965E"}}>564 continuan (76.6%)</h3><p>Tienen factura de Noviembre generada (pagada o pendiente)</p></div>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>172 sin factura (23.4%)</h3><p>No tienen factura de Noviembre. De estos, 155 estan inactivos = CHURN REAL</p></div>
+                        </div>
+                        <div className="box orange" style={{marginTop: 15}}>
+                            <h3 style={{color: "#FF7A27"}}>Que paso con los 172 sin factura?</h3>
+                            <ul>
+                                <li><strong>155 inactivos:</strong> No usaron el chat en Nov/Dic → CHURN REAL</li>
+                                <li><strong>17 activos:</strong> Siguen usando pero sin factura → Posible problema de billing</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S04 - Resumen ejecutivo
+        function S04() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag green">Resumen Ejecutivo</span>
+                        <h1>Noviembre en numeros</h1>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-4">
+                            <div className="metric dark"><div className="metric-label">Merchants Pagados</div><div className="metric-value">564</div><div className="metric-sub">vs 736 Oct (-23%)</div></div>
+                            <div className="metric green"><div className="metric-label">Revenue Cobrado</div><div className="metric-value">$8,094</div><div className="metric-sub">vs $9,932 Oct (-18%)</div></div>
+                            <div className="metric blue"><div className="metric-label">AI Chats Facturados</div><div className="metric-value">76.8K</div><div className="metric-sub">vs 93K Oct (-17%)</div></div>
+                            <div className="metric orange"><div className="metric-label">Pendiente Cobrar</div><div className="metric-value">$3,987</div><div className="metric-sub">560 merchants</div></div>
+                        </div>
+                        <div className="box blue" style={{marginTop: 20}}>
+                            <h3 style={{color: "#59A9FF"}}>Sobre los AI Chats</h3>
+                            <p><strong>AI Chats Facturados (76.8K):</strong> Son las conversaciones que cobramos en la factura. Es la metrica de revenue.</p>
+                            <p style={{marginTop: 8}}><strong>Chats en Trial (71.5K):</strong> Conversaciones de usuarios en periodo de prueba. No se cobran pero indican potencial.</p>
+                            <p style={{marginTop: 8}}><strong>Total procesados:</strong> ~148K conversaciones de AI atendidas en Noviembre.</p>
+                        </div>
+                        <div className="box green" style={{marginTop: 10}}>
+                            <h3 style={{color: "#00965E"}}>Si cobramos los pendientes activos: $11,244 (+13% vs Oct)</h3>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S05 - Comparacion Oct vs Nov
+        function S05() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag dark">Comparacion</span>
+                        <h1>Octubre vs Noviembre</h1>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>Metrica</th><th>Octubre</th><th>Noviembre</th><th>Cambio</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>Merchants pagados</strong></td><td>736</td><td>564</td><td className="bad">-23.4%</td></tr>
+                                <tr><td><strong>Revenue cobrado</strong></td><td>$9,932</td><td>$8,094</td><td className="bad">-18.5%</td></tr>
+                                <tr><td><strong>AI Chats facturados</strong></td><td>93,046</td><td>76,795</td><td className="bad">-17.5%</td></tr>
+                                <tr><td><strong>Chats en trial</strong></td><td>75,626</td><td>71,508</td><td className="warn">-5.4%</td></tr>
+                                <tr><td><strong>ARPU</strong></td><td>$13.49</td><td>$14.35</td><td className="good">+6.4%</td></tr>
+                                <tr><td><strong>New payments</strong></td><td>69</td><td>149</td><td className="good">+116%</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 15}}>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>Lo malo</h3><p>Menos merchants, menos revenue, menos chats. Impacto del churn.</p></div>
+                            <div className="box green"><h3 style={{color: "#00965E"}}>Lo bueno</h3><p>ARPU creciendo (+6.4%) y +116% nuevos pagos. Mejor calidad.</p></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S06 - Paises overview
+        function S06() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag">Por Pais</span>
+                        <h1>Performance por Pais</h1>
+                        <h2>Noviembre - Solo merchants que pagaron</h2>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>Pais</th><th>Merchants</th><th>Revenue</th><th>ARPU</th><th>AI Chats</th><th>vs Oct</th></tr></thead>
+                            <tbody>
+                                <tr><td><span className="flag">🇧🇷</span><strong>Brasil</strong></td><td>257</td><td>$3,210</td><td>$12.49</td><td>28,331</td><td className="bad">-22% merch</td></tr>
+                                <tr><td><span className="flag">🇦🇷</span><strong>Argentina</strong></td><td>261</td><td>$4,475</td><td>$17.15</td><td>45,572</td><td className="bad">-25% merch</td></tr>
+                                <tr><td><span className="flag">🇲🇽</span><strong>Mexico</strong></td><td>29</td><td>$306</td><td>$10.56</td><td>2,250</td><td className="warn">-17% merch</td></tr>
+                                <tr><td><span className="flag">🇨🇴</span><strong>Colombia</strong></td><td>13</td><td>$87</td><td>$6.71</td><td>538</td><td className="bad">-41% merch</td></tr>
+                                <tr><td><span className="flag">🇨🇱</span><strong>Chile</strong></td><td>4</td><td>$16</td><td>$3.88</td><td>104</td><td className="good">+33% merch</td></tr>
+                            </tbody>
+                            <tfoot><tr style={{background: "#F3F4F6"}}><td><strong>TOTAL</strong></td><td><strong>564</strong></td><td><strong>$8,094</strong></td><td><strong>$14.35</strong></td><td><strong>76,795</strong></td><td></td></tr></tfoot>
+                        </table>
+                        <div className="box blue" style={{marginTop: 15}}>
+                            <h3 style={{color: "#59A9FF"}}>Insights clave</h3>
+                            <ul>
+                                <li><strong>Argentina:</strong> Mayor revenue ($4,475) y mejor ARPU ($17.15)</li>
+                                <li><strong>Brasil:</strong> Mas churn (-22%) pero sigue siendo el mercado mas grande</li>
+                                <li><strong>Colombia:</strong> Caida fuerte (-41%), revisar situacion</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S07 - Brasil
+        function S07() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <div className="country-header"><span className="flag" style={{fontSize: 40}}>🇧🇷</span><div><span className="tag">Por Pais</span><h1>Brasil</h1></div></div>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-4">
+                            <div className="metric dark"><div className="metric-label">Merchants Nov</div><div className="metric-value">257</div><div className="metric-sub">vs 330 Oct</div></div>
+                            <div className="metric green"><div className="metric-label">Revenue</div><div className="metric-value">$3,210</div><div className="metric-sub">vs $3,547 Oct</div></div>
+                            <div className="metric blue"><div className="metric-label">AI Chats</div><div className="metric-value">28.3K</div><div className="metric-sub">vs 31.8K Oct</div></div>
+                            <div className="metric red"><div className="metric-label">Churn</div><div className="metric-value">23.9%</div><div className="metric-sub">79 merchants</div></div>
+                        </div>
+                        <table style={{marginTop: 20}}>
+                            <thead><tr><th>Metrica</th><th>Octubre</th><th>Noviembre</th><th>Cambio</th></tr></thead>
+                            <tbody>
+                                <tr><td>Merchants pagados</td><td>330</td><td>257</td><td className="bad">-22.1%</td></tr>
+                                <tr><td>Revenue</td><td>$3,547</td><td>$3,210</td><td className="warn">-9.5%</td></tr>
+                                <tr><td>ARPU</td><td>$10.75</td><td>$12.49</td><td className="good">+16.2%</td></tr>
+                                <tr><td>AI Chats facturados</td><td>31,794</td><td>28,331</td><td className="warn">-10.9%</td></tr>
+                                <tr><td>Free Trial Starts (Amplitude)</td><td>807</td><td>632</td><td className="bad">-21.7%</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="box red" style={{marginTop: 12}}>
+                            <h3 style={{color: "#EC3F41"}}>Alerta: Caida de trials -21.7%</h3>
+                            <p>Brasil representa 56% de los trials. La caida impacta todo el funnel.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S08 - Argentina
+        function S08() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <div className="country-header"><span className="flag" style={{fontSize: 40}}>🇦🇷</span><div><span className="tag">Por Pais</span><h1>Argentina</h1></div></div>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-4">
+                            <div className="metric dark"><div className="metric-label">Merchants Nov</div><div className="metric-value">261</div><div className="metric-sub">vs 346 Oct</div></div>
+                            <div className="metric green"><div className="metric-label">Revenue</div><div className="metric-value">$4,475</div><div className="metric-sub">vs $5,737 Oct</div></div>
+                            <div className="metric blue"><div className="metric-label">AI Chats</div><div className="metric-value">45.6K</div><div className="metric-sub">vs 56.6K Oct</div></div>
+                            <div className="metric red"><div className="metric-label">Churn</div><div className="metric-value">22.5%</div><div className="metric-sub">78 merchants</div></div>
+                        </div>
+                        <table style={{marginTop: 20}}>
+                            <thead><tr><th>Metrica</th><th>Octubre</th><th>Noviembre</th><th>Cambio</th></tr></thead>
+                            <tbody>
+                                <tr><td>Merchants pagados</td><td>346</td><td>261</td><td className="bad">-24.6%</td></tr>
+                                <tr><td>Revenue</td><td>$5,737</td><td>$4,475</td><td className="bad">-22.0%</td></tr>
+                                <tr><td>ARPU</td><td>$16.58</td><td>$17.15</td><td className="good">+3.4%</td></tr>
+                                <tr><td>AI Chats facturados</td><td>56,567</td><td>45,572</td><td className="bad">-19.4%</td></tr>
+                                <tr><td>Free Trial Starts (Amplitude)</td><td>381</td><td>339</td><td className="warn">-11.0%</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="box green" style={{marginTop: 12}}>
+                            <h3 style={{color: "#00965E"}}>Mejor ARPU de la region: $17.15</h3>
+                            <p>Argentina tiene el revenue mas alto y mejor ARPU. Mercado premium.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S09 - Mexico
+        function S09() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <div className="country-header"><span className="flag" style={{fontSize: 40}}>🇲🇽</span><div><span className="tag">Por Pais</span><h1>Mexico</h1></div></div>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-4">
+                            <div className="metric dark"><div className="metric-label">Merchants Nov</div><div className="metric-value">29</div><div className="metric-sub">vs 35 Oct</div></div>
+                            <div className="metric green"><div className="metric-label">Revenue</div><div className="metric-value">$306</div><div className="metric-sub">vs $488 Oct</div></div>
+                            <div className="metric blue"><div className="metric-label">AI Chats</div><div className="metric-value">2.3K</div><div className="metric-sub">vs 3.6K Oct</div></div>
+                            <div className="metric red"><div className="metric-label">Churn</div><div className="metric-value">20.0%</div><div className="metric-sub">7 merchants</div></div>
+                        </div>
+                        <table style={{marginTop: 20}}>
+                            <thead><tr><th>Metrica</th><th>Octubre</th><th>Noviembre</th><th>Cambio</th></tr></thead>
+                            <tbody>
+                                <tr><td>Merchants pagados</td><td>35</td><td>29</td><td className="warn">-17.1%</td></tr>
+                                <tr><td>Revenue</td><td>$488</td><td>$306</td><td className="bad">-37.3%</td></tr>
+                                <tr><td>ARPU</td><td>$13.94</td><td>$10.56</td><td className="bad">-24.2%</td></tr>
+                                <tr><td>AI Chats facturados</td><td>3,589</td><td>2,250</td><td className="bad">-37.3%</td></tr>
+                                <tr><td>Free Trial Starts (Amplitude)</td><td>67</td><td>76</td><td className="good">+13.4%</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="box orange" style={{marginTop: 12}}>
+                            <h3 style={{color: "#FF7A27"}}>Trials creciendo +13.4%</h3>
+                            <p>Unico pais grande con trials en crecimiento. Oportunidad de expansion.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S10 - Colombia y Chile
+        function S10() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag">Por Pais</span>
+                        <h1>Colombia y Chile</h1>
+                    </div>
+                    <div className="content">
+                        <div className="grid grid-2">
+                            <div>
+                                <div className="country-header"><span className="flag" style={{fontSize: 32}}>🇨🇴</span><h3>Colombia</h3></div>
+                                <div className="box red">
+                                    <table style={{fontSize: 12}}>
+                                        <tbody>
+                                            <tr><td>Merchants</td><td>22 → 13</td><td className="bad">-41%</td></tr>
+                                            <tr><td>Revenue</td><td>$149 → $87</td><td className="bad">-42%</td></tr>
+                                            <tr><td>ARPU</td><td>$6.79 → $6.71</td><td className="warn">-1%</td></tr>
+                                            <tr><td>Churn</td><td colspan="2" className="bad">36.4% (8)</td></tr>
+                                        </tbody>
+                                    </table>
+                                    <p style={{marginTop: 10, fontSize: 12}}>Mayor churn rate de la region. ARPU mas bajo.</p>
+                                </div>
+                            </div>
+                            <div>
+                                <div className="country-header"><span className="flag" style={{fontSize: 32}}>🇨🇱</span><h3>Chile</h3></div>
+                                <div className="box green">
+                                    <table style={{fontSize: 12}}>
+                                        <tbody>
+                                            <tr><td>Merchants</td><td>3 → 4</td><td className="good">+33%</td></tr>
+                                            <tr><td>Revenue</td><td>$10 → $16</td><td className="good">+50%</td></tr>
+                                            <tr><td>ARPU</td><td>$3.49 → $3.88</td><td className="good">+11%</td></tr>
+                                            <tr><td>Churn</td><td colspan="2" className="good">0% (0)</td></tr>
+                                        </tbody>
+                                    </table>
+                                    <p style={{marginTop: 10, fontSize: 12}}>Creciendo pero base muy pequena. 0% churn.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="box orange" style={{marginTop: 20}}>
+                            <h3 style={{color: "#FF7A27"}}>Colombia necesita atencion</h3>
+                            <p>36.4% churn es el mas alto. Solo 13 merchants activos con ARPU bajo ($6.71). Revisar producto/pricing.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S11 - AI Chats explicacion
+        function S11() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag blue">AI Chats</span>
+                        <h1>Entendiendo los AI Chats</h1>
+                        <h2>Que son y como los medimos</h2>
+                    </div>
+                    <div className="content">
+                        <div className="box blue" style={{marginBottom: 20}}>
+                            <h3 style={{color: "#59A9FF"}}>Que es un AI Chat?</h3>
+                            <p>Es una conversacion entre un cliente del merchant y nuestra IA via WhatsApp. Cada vez que la IA responde automaticamente a un cliente, cuenta como AI Chat.</p>
+                        </div>
+                        <div className="metrics metrics-3">
+                            <div className="metric dark"><div className="metric-label">Chats Facturados</div><div className="metric-value">76.8K</div><div className="metric-sub">Lo que cobramos</div></div>
+                            <div className="metric"><div className="metric-label">Chats en Trial</div><div className="metric-value">71.5K</div><div className="metric-sub">Gratis (7 dias)</div></div>
+                            <div className="metric green"><div className="metric-label">Total Procesados</div><div className="metric-value">148.3K</div><div className="metric-sub">Conversaciones Nov</div></div>
+                        </div>
+                        <div className="box" style={{marginTop: 15}}>
+                            <h3>Tipos de AI Chats:</h3>
+                            <ul>
+                                <li><strong>Invoice Count Conversation:</strong> Chats incluidos en la factura del mes. ESTOS SE COBRAN.</li>
+                                <li><strong>Conversations In Trial:</strong> Chats durante el periodo de prueba de 7 dias. NO SE COBRAN.</li>
+                                <li><strong>Conversations After Trial:</strong> Chats totales despues del trial (acumulado historico).</li>
+                            </ul>
+                        </div>
+                        <div className="box green" style={{marginTop: 10}}>
+                            <p><strong>Para este reporte:</strong> Usamos <code>Invoice Count Conversation</code> para medir chats facturados (revenue) y <code>Conversations In Trial</code> para medir potencial de conversion.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S12 - New Payments
+        function S12() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag green">Crecimiento</span>
+                        <h1>New Payments: +116%</h1>
+                        <h2>Merchants que pagaron su primera factura</h2>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-2">
+                            <div className="metric dark"><div className="metric-label">Octubre</div><div className="metric-value">69</div><div className="metric-sub">nuevos que pagaron</div></div>
+                            <div className="metric green"><div className="metric-label">Noviembre</div><div className="metric-value">149</div><div className="metric-sub">nuevos que pagaron</div></div>
+                        </div>
+                        <table style={{marginTop: 20}}>
+                            <thead><tr><th>Metrica</th><th>Octubre</th><th>Noviembre</th><th>Cambio</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>Merchants nuevos</strong></td><td>69</td><td>149</td><td className="good">+116%</td></tr>
+                                <tr><td><strong>Revenue de nuevos</strong></td><td>$131</td><td>$888</td><td className="good">+578%</td></tr>
+                                <tr><td><strong>AI Chats de nuevos</strong></td><td>1,050</td><td>16,576</td><td className="good">+1,479%</td></tr>
+                                <tr><td><strong>ARPU nuevos</strong></td><td>$1.90</td><td>$5.96</td><td className="good">+214%</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="box green" style={{marginTop: 15}}>
+                            <h3 style={{color: "#00965E"}}>Los nuevos de Nov son de mejor calidad</h3>
+                            <p>6x mas revenue por merchant y 15x mas chats. El funnel esta convirtiendo mejor.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S13 - Pendientes
+        function S13() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag orange">Pendientes</span>
+                        <h1>560 Merchants por Cobrar</h1>
+                        <h2>$3,987 facturado sin pagar</h2>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-3">
+                            <div className="metric dark"><div className="metric-label">Total Pendiente</div><div className="metric-value">560</div><div className="metric-sub">merchants</div></div>
+                            <div className="metric orange"><div className="metric-label">Revenue Pendiente</div><div className="metric-value">$3,987</div></div>
+                            <div className="metric blue"><div className="metric-label">Chats Pendientes</div><div className="metric-value">33.7K</div></div>
+                        </div>
+                        <table style={{marginTop: 15}}>
+                            <thead><tr><th>Tipo</th><th>Merchants</th><th>Revenue</th><th>Descripcion</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>Primera factura</strong></td><td>257</td><td>$1,432</td><td>Nunca pagaron antes (riesgo)</td></tr>
+                                <tr><td><strong>Recurrentes</strong></td><td>303</td><td>$2,556</td><td>Ya pagaron antes (mas probable)</td></tr>
+                            </tbody>
+                            <tfoot><tr style={{background: "#F3F4F6"}}><td><strong>TOTAL</strong></td><td><strong>560</strong></td><td><strong>$3,987</strong></td><td></td></tr></tfoot>
+                        </table>
+                        <div className="box orange" style={{marginTop: 15}}>
+                            <h3 style={{color: "#FF7A27"}}>Pregunta clave: Van a pagar?</h3>
+                            <p>Analizamos su actividad reciente (Last Conversation Date) para predecir probabilidad de cobro.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S14 - Pendientes actividad
+        function S14() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag orange">Pendientes</span>
+                        <h1>Analisis de Actividad</h1>
+                        <h2>Usaron el chat en la ultima semana?</h2>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-2">
+                            <div className="metric green"><div className="metric-label">Activos (usaron 7d)</div><div className="metric-value">315</div><div className="metric-sub">56% - Van a pagar ($3,150)</div></div>
+                            <div className="metric red"><div className="metric-label">Inactivos (+7d)</div><div className="metric-value">245</div><div className="metric-sub">44% - Riesgo ($837)</div></div>
+                        </div>
+                        <table style={{marginTop: 20}}>
+                            <thead><tr><th>Tipo</th><th>Total</th><th>Activo 7d</th><th>$ OK</th><th>Inactivo</th><th>$ Riesgo</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>Primera factura</strong></td><td>257</td><td className="good">152 (59%)</td><td className="good">$1,107</td><td className="bad">105</td><td className="bad">$324</td></tr>
+                                <tr><td><strong>Recurrentes</strong></td><td>303</td><td className="good">163 (54%)</td><td className="good">$2,043</td><td className="bad">140</td><td className="bad">$513</td></tr>
+                            </tbody>
+                            <tfoot><tr style={{background: "#F3F4F6"}}><td><strong>TOTAL</strong></td><td><strong>560</strong></td><td><strong>315</strong></td><td className="good"><strong>$3,150</strong></td><td><strong>245</strong></td><td className="bad"><strong>$837</strong></td></tr></tfoot>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 15}}>
+                            <div className="box green"><h3 style={{color: "#00965E"}}>Accion: Cobrar $3,150</h3><p>315 merchants activos. Activar cobranza urgente.</p></div>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>Riesgo: $837</h3><p>245 inactivos. Posible sales lost.</p></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S15 - Proyeccion
+        function S15() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag orange">Pendientes</span>
+                        <h1>Proyeccion de Cierre</h1>
+                        <h2>Cuanto vamos a terminar cobrando?</h2>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>Escenario</th><th>Revenue</th><th>vs Oct ($9,932)</th><th>Prob</th></tr></thead>
+                            <tbody>
+                                <tr style={{background: "#FEF2F2"}}><td><strong>Pesimista</strong> (solo cobrado)</td><td>$8,094</td><td className="bad">-18.5%</td><td>100%</td></tr>
+                                <tr style={{background: "#FFF7ED"}}><td><strong>Conservador</strong> (+50% activos)</td><td>$9,669</td><td className="warn">-2.6%</td><td>Alta</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><strong>Esperado</strong> (+pendientes activos)</td><td className="good">$11,244</td><td className="good">+13.2%</td><td>Probable</td></tr>
+                                <tr style={{background: "#EFF6FF"}}><td><strong>Optimista</strong> (+todos)</td><td>$12,082</td><td className="good">+21.6%</td><td>Posible</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="box green" style={{marginTop: 20}}>
+                            <h3 style={{color: "#00965E"}}>Escenario esperado: $11,244 (+13.2% vs Oct)</h3>
+                            <p>Si cobramos a los 315 merchants activos, superamos Octubre.</p>
+                        </div>
+                        <div className="box orange" style={{marginTop: 10}}>
+                            <h3 style={{color: "#FF7A27"}}>Accion inmediata</h3>
+                            <p>Priorizar cobranza de <strong>315 merchants activos</strong> ($3,150). Estan usando el producto.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S16 - Churn intro
+        function S16() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag red">Churn</span>
+                        <h1>Analisis de Churn</h1>
+                        <h2>Quienes dejaron de pagar y por que?</h2>
+                    </div>
+                    <div className="content">
+                        <div className="box red" style={{marginBottom: 20}}>
+                            <h3 style={{color: "#EC3F41"}}>Definicion de Churn para este reporte</h3>
+                            <p>Un merchant es <strong>CHURN</strong> si:</p>
+                            <ul>
+                                <li>PAGO una factura de Octubre</li>
+                                <li>NO tiene factura de Noviembre generada</li>
+                                <li>Esta INACTIVO (no uso el chat en Nov/Dic)</li>
+                            </ul>
+                        </div>
+                        <div className="metrics metrics-4">
+                            <div className="metric red"><div className="metric-label">Logo Churn</div><div className="metric-value">21.1%</div><div className="metric-sub">155 merchants</div></div>
+                            <div className="metric orange"><div className="metric-label">GMV Churn</div><div className="metric-value">16.5%</div><div className="metric-sub">$1.58M perdido</div></div>
+                            <div className="metric dark"><div className="metric-label">Revenue Churn</div><div className="metric-value">8.9%</div><div className="metric-sub">$887 perdido</div></div>
+                            <div className="metric blue"><div className="metric-label">Chats Churn</div><div className="metric-value">8.9%</div><div className="metric-sub">8.3K perdidos</div></div>
+                        </div>
+                        <div className="box green" style={{marginTop: 15}}>
+                            <h3 style={{color: "#00965E"}}>Buena noticia: Revenue Churn (8.9%) es menor que Logo Churn (21.1%)</h3>
+                            <p>Perdimos 21% de merchants pero solo 9% del revenue. Los que se fueron pagaban poco.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S17 - Churn flujo
+        function S17() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag red">Churn</span>
+                        <h1>Flujo de Oct a Nov</h1>
+                    </div>
+                    <div className="content">
+                        <div className="flow">
+                            <div className="flow-item" style={{background: "#EFF6FF"}}><div style={{fontSize: 10}}>Pagaron Oct</div><div style={{fontSize: 32, fontWeight: 700}}>736</div></div>
+                            <div className="flow-arrow">→</div>
+                            <div className="flow-item" style={{background: "#ECFDF5"}}><div style={{fontSize: 10}}>Tienen fact Nov</div><div style={{fontSize: 32, fontWeight: 700, color: "#00965E"}}>564</div></div>
+                            <div className="flow-arrow">→</div>
+                            <div className="flow-item" style={{background: "#FFF7ED"}}><div style={{fontSize: 10}}>Sin fact Nov</div><div style={{fontSize: 32, fontWeight: 700, color: "#FF7A27"}}>172</div></div>
+                            <div className="flow-arrow">→</div>
+                            <div className="flow-item" style={{background: "#FEF2F2"}}><div style={{fontSize: 10}}>Inactivos</div><div style={{fontSize: 32, fontWeight: 700, color: "#EC3F41"}}>155</div></div>
+                        </div>
+                        <div className="grid grid-2" style={{marginTop: 30}}>
+                            <div className="box red" style={{textAlign: "center"}}>
+                                <h3 style={{color: "#EC3F41"}}>CHURN REAL</h3>
+                                <div style={{fontSize: 56, fontWeight: 700}}>155</div>
+                                <p>21.1% de la base Oct</p>
+                            </div>
+                            <div className="box green" style={{textAlign: "center"}}>
+                                <h3 style={{color: "#00965E"}}>RETENCION</h3>
+                                <div style={{fontSize: 56, fontWeight: 700}}>78.9%</div>
+                                <p>581 de 736 continuan</p>
+                            </div>
+                        </div>
+                        <div className="box orange" style={{marginTop: 15}}>
+                            <p><strong>17 merchants</strong> sin factura pero activos no son churn (posible problema de billing).</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S18 - Churn por plan
+        function S18() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag red">Churn</span>
+                        <h1>Churn por Plan</h1>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>Plan</th><th>Base Oct</th><th>Churn</th><th>Rate</th><th>Rev Perdido</th></tr></thead>
+                            <tbody>
+                                <tr style={{background: "#FEF2F2"}}><td><strong>plan-a</strong></td><td>274</td><td className="bad">75</td><td className="bad">27.4%</td><td>$175</td></tr>
+                                <tr><td><strong>plan-b</strong></td><td>258</td><td className="warn">49</td><td className="warn">19.0%</td><td>$293</td></tr>
+                                <tr><td><strong>enterprise</strong></td><td>84</td><td>14</td><td>16.7%</td><td>$219</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><strong>plan-c</strong></td><td>110</td><td>15</td><td className="good">13.6%</td><td>$198</td></tr>
+                            </tbody>
+                            <tfoot><tr style={{background: "#F3F4F6"}}><td><strong>TOTAL</strong></td><td><strong>736</strong></td><td><strong>155</strong></td><td><strong>21.1%</strong></td><td><strong>$887</strong></td></tr></tfoot>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 20}}>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>Plan-A: 27.4% churn</h3><p>El mas alto. Correlaciona con 76% que pagan menos de $5.</p></div>
+                            <div className="box green"><h3 style={{color: "#00965E"}}>Plan-C: 13.6% churn</h3><p>El mas bajo. Mejor producto-market fit.</p></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S19 - Churn por pais
+        function S19() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag red">Churn</span>
+                        <h1>Churn por Pais</h1>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>Pais</th><th>Base Oct</th><th>Retenidos</th><th>Churn</th><th>Rate</th></tr></thead>
+                            <tbody>
+                                <tr style={{background: "#FEF2F2"}}><td><span className="flag">🇨🇴</span><strong>Colombia</strong></td><td>22</td><td>14</td><td className="bad">8</td><td className="bad">36.4%</td></tr>
+                                <tr style={{background: "#FEF2F2"}}><td><span className="flag">🇧🇷</span><strong>Brasil</strong></td><td>330</td><td>251</td><td className="bad">79</td><td className="bad">23.9%</td></tr>
+                                <tr><td><span className="flag">🇦🇷</span><strong>Argentina</strong></td><td>346</td><td>268</td><td className="warn">78</td><td className="warn">22.5%</td></tr>
+                                <tr><td><span className="flag">🇲🇽</span><strong>Mexico</strong></td><td>35</td><td>28</td><td>7</td><td>20.0%</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><span className="flag">🇨🇱</span><strong>Chile</strong></td><td>3</td><td>3</td><td className="good">0</td><td className="good">0%</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 20}}>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>Colombia: 36.4% churn</h3><p>El mas alto. ARPU bajo ($6.71). Revisar mercado.</p></div>
+                            <div className="box orange"><h3 style={{color: "#FF7A27"}}>Brasil: 79 churns (51%)</h3><p>Mayor cantidad absoluta. Es el mercado mas grande.</p></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S20 - Revenue Churn
+        function S20() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag red">Churn</span>
+                        <h1>Revenue vs Logo Churn</h1>
+                        <h2>Perdemos merchants, pero no los mejores</h2>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-2">
+                            <div className="metric dark"><div className="metric-label">ARPU Churneados</div><div className="metric-value">$5.72</div><div className="metric-sub">Los que se fueron</div></div>
+                            <div className="metric green"><div className="metric-label">ARPU Retenidos</div><div className="metric-value">$15.58</div><div className="metric-sub">Los que quedan</div></div>
+                        </div>
+                        <div className="box green" style={{marginTop: 20, textAlign: "center"}}>
+                            <h3 style={{color: "#00965E", fontSize: 20}}>Los retenidos pagan 2.7x mas que los churneados</h3>
+                            <p>El churn es de bajo valor. Retenemos a los mejores clientes.</p>
+                        </div>
+                        <table style={{marginTop: 15}}>
+                            <thead><tr><th>Metrica</th><th>Churneados</th><th>Retenidos</th><th>Ratio</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>Merchants</strong></td><td>155</td><td>581</td><td>1:3.7</td></tr>
+                                <tr><td><strong>Revenue</strong></td><td>$887 (8.9%)</td><td>$9,045 (91.1%)</td><td>1:10</td></tr>
+                                <tr><td><strong>AI Chats</strong></td><td>8,271 (8.9%)</td><td>84,775 (91.1%)</td><td>1:10</td></tr>
+                                <tr><td><strong>ARPU</strong></td><td>$5.72</td><td>$15.58</td><td>1:2.7</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        // S21 - ARPU
+        function S21() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag dark">ARPU</span>
+                        <h1>ARPU: Lo que parece vs realidad</h1>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-2">
+                            <div className="metric dark"><div className="metric-label">ARPU Reportado</div><div className="metric-value">$14.35</div><div className="metric-sub">Todos los merchants</div></div>
+                            <div className="metric green"><div className="metric-label">ARPU Real (sin menores a $5)</div><div className="metric-value">$28.94</div><div className="metric-sub">Solo $5+ payers</div></div>
+                        </div>
+                        <div className="box orange" style={{marginTop: 20, textAlign: "center"}}>
+                            <h3 style={{color: "#FF7A27", fontSize: 18}}>El ARPU real es 2x el reportado</h3>
+                            <p>53% de merchants pagan menos de $5, pero solo generan 6% del revenue.</p>
+                        </div>
+                        <table style={{marginTop: 15}}>
+                            <thead><tr><th>Segmento</th><th>Merchants</th><th>% del Total</th><th>Revenue</th><th>% Rev</th></tr></thead>
+                            <tbody>
+                                <tr style={{background: "#FEF2F2"}}><td><strong>Pagan menos de $5</strong></td><td>301</td><td className="bad">53%</td><td>$483</td><td className="bad">6%</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><strong>Pagan $5+</strong></td><td>263</td><td>47%</td><td>$7,611</td><td className="good">94%</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="box blue" style={{marginTop: 15}}>
+                            <p>El 47% de merchants genera el 94% del revenue. Estos son los que importan.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S22 - ARPU por plan
+        function S22() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag dark">ARPU</span>
+                        <h1>ARPU por Plan</h1>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>Plan</th><th>Merchants</th><th>Pagan menor a $5</th><th>%</th><th>ARPU</th></tr></thead>
+                            <tbody>
+                                <tr style={{background: "#FEF2F2"}}><td><strong>plan-a</strong></td><td>274</td><td className="bad">208</td><td className="bad">75.9%</td><td>$5.59</td></tr>
+                                <tr style={{background: "#FFF7ED"}}><td><strong>plan-b</strong></td><td>258</td><td className="warn">134</td><td className="warn">51.9%</td><td>$10.69</td></tr>
+                                <tr><td><strong>plan-c</strong></td><td>110</td><td>27</td><td className="good">24.5%</td><td>$22.48</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><strong>enterprise</strong></td><td>84</td><td>15</td><td className="good">17.9%</td><td className="good">$36.86</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 20}}>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>Plan-A: 76% pagan menos de $5</h3><p>3 de 4 merchants no aportan. Revisar pricing.</p></div>
+                            <div className="box green"><h3 style={{color: "#00965E"}}>Enterprise: ARPU 6.6x mayor</h3><p>$36.86 vs $5.59. El valor esta en enterprise.</p></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S23 - Amplitude data
+        function S23() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag blue">Amplitude</span>
+                        <h1>Metricas de Producto</h1>
+                        <h2>Datos de Amplitude - Nov vs Oct</h2>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>Metrica</th><th>Octubre</th><th>Noviembre</th><th>Cambio</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>Free Trial Starts</strong></td><td>1,323</td><td>1,119</td><td className="bad">-15.4%</td></tr>
+                                <tr><td><strong>Menu Clicks (interes)</strong></td><td>71,343</td><td>66,104</td><td className="warn">-7.3%</td></tr>
+                                <tr><td><strong>QR Generation</strong></td><td>136</td><td>106</td><td className="bad">-22%</td></tr>
+                                <tr><td><strong>Playground Messages</strong></td><td>5,407</td><td>4,376</td><td className="bad">-19%</td></tr>
+                                <tr><td><strong>Copilot Use</strong></td><td>81</td><td>64</td><td className="bad">-21%</td></tr>
+                                <tr><td><strong>Billing Modal (post-trial)</strong></td><td>10,709</td><td>9,732</td><td className="warn">-9%</td></tr>
+                                <tr><td><strong>Click Pagar Plan</strong></td><td>2,641</td><td>2,385</td><td className="warn">-9.7%</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 15}}>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>Trials cayeron 15%</h3><p>Menos usuarios entrando al funnel.</p></div>
+                            <div className="box orange"><h3 style={{color: "#FF7A27"}}>Conversion estable: 24.5%</h3><p>El problema es top of funnel.</p></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S24 - Amplitude por pais
+        function S24() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag blue">Amplitude</span>
+                        <h1>Free Trial Starts por Pais</h1>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>Pais</th><th>Octubre</th><th>Noviembre</th><th>Cambio</th><th>% del Total</th></tr></thead>
+                            <tbody>
+                                <tr style={{background: "#FEF2F2"}}><td><span className="flag">🇧🇷</span><strong>Brasil</strong></td><td>807</td><td>632</td><td className="bad">-21.7%</td><td>56%</td></tr>
+                                <tr><td><span className="flag">🇦🇷</span><strong>Argentina</strong></td><td>381</td><td>339</td><td className="warn">-11%</td><td>30%</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><span className="flag">🇲🇽</span><strong>Mexico</strong></td><td>67</td><td>76</td><td className="good">+13.4%</td><td>7%</td></tr>
+                                <tr><td><span className="flag">🇨🇴</span><strong>Colombia</strong></td><td>51</td><td>51</td><td>0%</td><td>5%</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><span className="flag">🇨🇱</span><strong>Chile</strong></td><td>9</td><td>18</td><td className="good">+100%</td><td>2%</td></tr>
+                            </tbody>
+                            <tfoot><tr style={{background: "#F3F4F6"}}><td><strong>TOTAL</strong></td><td><strong>1,323</strong></td><td><strong>1,119</strong></td><td className="bad"><strong>-15.4%</strong></td><td></td></tr></tfoot>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 15}}>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>Brasil: -21.7% trials</h3><p>175 trials menos. Es el 56% del total.</p></div>
+                            <div className="box green"><h3 style={{color: "#00965E"}}>Mexico y Chile creciendo</h3><p>+13% y +100% respectivamente.</p></div>
+                        </div>
+                        <div className="box blue" style={{marginTop: 10}}>
+                            <p>La caida de trials se concentra en <strong>Brasil (-175)</strong> y <strong>Argentina (-42)</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S25 - Resumen AI Chats
+        function S25() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag blue">AI Chats</span>
+                        <h1>Resumen AI Chats Noviembre</h1>
+                        <h2>Todos los chats procesados (facturados y gratuitos)</h2>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-3">
+                            <div className="metric green"><div className="metric-label">Chats Facturados</div><div className="metric-value">76.8K</div><div className="metric-sub">Lo que cobramos</div></div>
+                            <div className="metric blue"><div className="metric-label">Chats en Trial</div><div className="metric-value">71.5K</div><div className="metric-sub">Gratis (potencial)</div></div>
+                            <div className="metric dark"><div className="metric-label">Total Procesados</div><div className="metric-value">148.3K</div><div className="metric-sub">Conversaciones IA</div></div>
+                        </div>
+                        <div className="box" style={{marginTop: 20}}>
+                            <h3>Desglose por estado:</h3>
+                            <table style={{fontSize: 13}}>
+                                <thead><tr><th>Tipo</th><th>Chats</th><th>%</th><th>Descripcion</th></tr></thead>
+                                <tbody>
+                                    <tr style={{background: "#ECFDF5"}}><td><strong>Facturados (pagados)</strong></td><td>76,795</td><td>52%</td><td>Chats de merchants que pagaron Nov</td></tr>
+                                    <tr style={{background: "#FFF7ED"}}><td><strong>Facturados (pendientes)</strong></td><td>33,705</td><td>23%</td><td>Chats de merchants con factura sin pagar</td></tr>
+                                    <tr style={{background: "#EFF6FF"}}><td><strong>En Trial</strong></td><td>71,508</td><td>48%</td><td>Chats gratis durante periodo de prueba</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="box green" style={{marginTop: 15}}>
+                            <h3 style={{color: "#00965E"}}>148K conversaciones de IA atendidas</h3>
+                            <p>Cada una es un cliente del merchant que recibio atencion automatica.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S26 - Insights
+        function S26() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag">Insights</span>
+                        <h1>Patrones Importantes</h1>
+                    </div>
+                    <div className="content">
+                        <div className="box red" style={{marginBottom: 12}}>
+                            <h3 style={{color: "#EC3F41"}}>1. El churn ocurre 30-60 dias ANTES de dejar de pagar</h3>
+                            <p>63% de los churneados dejaron de usar en Ago/Sep pero pagaron Oct. Oportunidad de early warning.</p>
+                        </div>
+                        <div className="box orange" style={{marginBottom: 12}}>
+                            <h3 style={{color: "#FF7A27"}}>2. Plan-A es problematico</h3>
+                            <p>76% pagan menos de $5, 27.4% churn rate. No es rentable en su estado actual.</p>
+                        </div>
+                        <div className="box blue" style={{marginBottom: 12}}>
+                            <h3 style={{color: "#59A9FF"}}>3. Brasil necesita atencion urgente</h3>
+                            <p>-21.7% trials, 24% churn. Es el 56% de nuestro funnel y esta cayendo.</p>
+                        </div>
+                        <div className="box green">
+                            <h3 style={{color: "#00965E"}}>4. Los nuevos son mejores</h3>
+                            <p>+116% new payments con 6x mas revenue por merchant. El funnel esta madurando.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S27 - Resumen por segmento
+        function S27() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag">Resumen</span>
+                        <h1>Estado de Noviembre por Segmento</h1>
+                    </div>
+                    <div className="content">
+                        <table style={{fontSize: 12}}>
+                            <thead><tr><th>Segmento</th><th>Merch</th><th>Revenue</th><th>Chats</th><th>Estado</th></tr></thead>
+                            <tbody>
+                                <tr style={{background: "#ECFDF5"}}><td><strong>Pagado recurrente</strong></td><td>415</td><td className="good">$7,207</td><td>60.2K</td><td>✓ OK</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><strong>Pagado nuevo</strong></td><td>149</td><td className="good">$888</td><td>16.6K</td><td>✓ OK</td></tr>
+                                <tr style={{background: "#EFF6FF"}}><td><strong>Pendiente activo</strong></td><td>315</td><td style={{color: "#59A9FF"}}>$3,150</td><td>22.3K</td><td>Por cobrar</td></tr>
+                                <tr style={{background: "#FFF7ED"}}><td><strong>Pendiente inactivo</strong></td><td>245</td><td className="warn">$837</td><td>11.4K</td><td>Riesgo</td></tr>
+                                <tr style={{background: "#FEF2F2"}}><td><strong>Churn (sin factura)</strong></td><td>155</td><td className="bad">$0</td><td>0</td><td>Perdido</td></tr>
+                            </tbody>
+                            <tfoot><tr style={{background: "#F3F4F6"}}><td><strong>TOTAL</strong></td><td><strong>1,279</strong></td><td><strong>$12,082</strong></td><td><strong>110.5K</strong></td><td></td></tr></tfoot>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 15}}>
+                            <div className="box green"><h3 style={{color: "#00965E"}}>$11,245 seguros (93%)</h3><p>Pagado + Pendientes activos</p></div>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>$837 en riesgo (7%)</h3><p>Pendientes inactivos</p></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S28 - Conclusiones
+        function S28() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag green">Conclusiones</span>
+                        <h1>Que aprendimos de Noviembre?</h1>
+                    </div>
+                    <div className="content">
+                        <div className="box green">
+                            <h3 style={{color: "#00965E"}}>✓ Lo bueno</h3>
+                            <ul>
+                                <li>New payments +116% (149 vs 69) con mejor calidad</li>
+                                <li>ARPU creciendo +6.4% ($13.49 → $14.35)</li>
+                                <li>Revenue churn (8.9%) menor que logo churn (21.1%)</li>
+                                <li>148K conversaciones de IA procesadas</li>
+                            </ul>
+                        </div>
+                        <div className="box red" style={{marginTop: 12}}>
+                            <h3 style={{color: "#EC3F41"}}>✗ Lo preocupante</h3>
+                            <ul>
+                                <li>155 merchants churnearon (21.1%)</li>
+                                <li>Plan-A: 27.4% churn, 76% pagan menos de $5</li>
+                                <li>Brasil: -21.7% trials, 24% churn</li>
+                                <li>$3,987 pendiente de cobrar</li>
+                            </ul>
+                        </div>
+                        <div className="box orange" style={{marginTop: 12}}>
+                            <h3 style={{color: "#FF7A27"}}>⚠ Pendiente urgente</h3>
+                            <p>Cobrar <strong>$3,150</strong> de 315 merchants activos para cerrar Nov +13% vs Oct.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S29 - Acciones
+        function S29() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag green">Acciones</span>
+                        <h1>Que hacer ahora?</h1>
+                    </div>
+                    <div className="content">
+                        <div className="box red">
+                            <h3 style={{color: "#EC3F41"}}>1. URGENTE: Cobrar pendientes activos</h3>
+                            <p>315 merchants usaron el chat esta semana pero no pagaron. $3,150 por cobrar.</p>
+                        </div>
+                        <div className="box orange" style={{marginTop: 10}}>
+                            <h3 style={{color: "#FF7A27"}}>2. Revisar Plan-A</h3>
+                            <p>76% pagan menos de $5, 27.4% churn. Evaluar aumentar precio minimo o mover a freemium.</p>
+                        </div>
+                        <div className="box blue" style={{marginTop: 10}}>
+                            <h3 style={{color: "#59A9FF"}}>3. Investigar caida Brasil</h3>
+                            <p>-21.7% trials es critico. Es el 56% del funnel. Revisar campanas y acquisition.</p>
+                        </div>
+                        <div className="box" style={{marginTop: 10}}>
+                            <h3>4. Implementar Early Warning</h3>
+                            <p>63% de churns estaban inactivos 30-60 dias antes. Alertar cuando no usan en 2 semanas.</p>
+                        </div>
+                        <div className="box green" style={{marginTop: 10}}>
+                            <h3 style={{color: "#00965E"}}>5. Expandir Mexico y Chile</h3>
+                            <p>Unicos mercados con trials creciendo (+13% y +100%). Oportunidad de inversion.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S30 - KPIs objetivo
+        function S30() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag">Objetivos</span>
+                        <h1>KPIs a Monitorear</h1>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>KPI</th><th>Actual Nov</th><th>Target Dic</th><th>Accion</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>Churn Rate</strong></td><td className="bad">21.1%</td><td className="good">menor a 15%</td><td>Early warning + retencion</td></tr>
+                                <tr><td><strong>Revenue</strong></td><td>$8,094 cobrado</td><td className="good">$12,000+</td><td>Cobrar pendientes</td></tr>
+                                <tr><td><strong>Trials Brasil</strong></td><td className="bad">632 (-21%)</td><td>700+</td><td>Revisar acquisition</td></tr>
+                                <tr><td><strong>Plan-A Churn</strong></td><td className="bad">27.4%</td><td>menor a 20%</td><td>Revisar pricing/producto</td></tr>
+                                <tr><td><strong>ARPU</strong></td><td>$14.35</td><td className="good">$15+</td><td>Upsell a planes mayores</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="box blue" style={{marginTop: 20}}>
+                            <h3 style={{color: "#59A9FF"}}>Metricas Amplitude a revisar semanalmente</h3>
+                            <ul>
+                                <li>Free Trial Starts (por pais)</li>
+                                <li>Billing Modal Show → Click Pagar (conversion)</li>
+                                <li>Playground usage (engagement)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S31 - Timeline
+        function S31() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag">Timeline</span>
+                        <h1>Proximos Pasos</h1>
+                    </div>
+                    <div className="content">
+                        <div className="box red" style={{marginBottom: 12}}>
+                            <h3 style={{color: "#EC3F41"}}>Esta semana</h3>
+                            <ul>
+                                <li>Activar cobranza a 315 merchants activos con factura pendiente</li>
+                                <li>Contactar los 17 merchants activos sin factura (billing issue)</li>
+                            </ul>
+                        </div>
+                        <div className="box orange" style={{marginBottom: 12}}>
+                            <h3 style={{color: "#FF7A27"}}>Proximas 2 semanas</h3>
+                            <ul>
+                                <li>Analisis profundo de caida de trials en Brasil</li>
+                                <li>Propuesta de ajuste de pricing Plan-A</li>
+                                <li>Implementar alerta de inactividad 2 semanas</li>
+                            </ul>
+                        </div>
+                        <div className="box blue" style={{marginBottom: 12}}>
+                            <h3 style={{color: "#59A9FF"}}>Diciembre</h3>
+                            <ul>
+                                <li>Test de nuevos precios Plan-A</li>
+                                <li>Campana de reactivacion para inactivos</li>
+                                <li>Plan de expansion Mexico/Chile</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S32 - Cierre
+        function S32() {
+            return (
+                <div className="slide dark" style={{justifyContent: "center", textAlign: "center"}}>
+                    <div>
+                        <div style={{fontSize: 14, color: "#59A9FF", marginBottom: 20, letterSpacing: 2}}>NUVEM CHAT</div>
+                        <h1 style={{fontSize: 48, marginBottom: 30}}>Gracias</h1>
+                        <p style={{fontSize: 18, color: "#9CA3AF", marginBottom: 40}}>Reporte Noviembre 2025</p>
+                        <div className="metrics metrics-3" style={{maxWidth: 700, margin: "0 auto"}}>
+                            <div className="metric green"><div className="metric-label">Revenue</div><div className="metric-value">$8.1K</div><div className="metric-sub">cobrado</div></div>
+                            <div className="metric blue"><div className="metric-label">New Payments</div><div className="metric-value">+116%</div></div>
+                            <div className="metric orange"><div className="metric-label">Por Cobrar</div><div className="metric-value">$3.1K</div></div>
+                        </div>
+                        <p style={{marginTop: 40, color: "#6B7280", fontSize: 14}}>Preguntas? → agustin.parraquini@tiendanube.com</p>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+</body>
+</html>
