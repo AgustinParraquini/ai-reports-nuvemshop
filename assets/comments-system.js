@@ -1,17 +1,35 @@
 /**
  * Sistema de Comentarios Universal para Reportes
- * Nuvemshop AI Reports
+ * Nuvemshop AI Reports - v2.0
+ * 
+ * CARACTERÍSTICAS:
+ * - Comentarios por slide con posición
+ * - Respuestas anidadas
+ * - Estados: Abierto/Cerrado (Resolver/Reabrir)
+ * - Filtros: Este slide, Abiertos, Cerrados, Todos
+ * - Navegación "Ir al slide" desde comentarios
+ * - Integración automática con Firebase Auth (nombre + email)
+ * - Temas: dark y light
+ * - Sincronización en tiempo real con Firebase
  * 
  * USO:
  * 1. Incluir Firebase SDK en el HTML:
  *    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
  *    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+ *    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
  * 
  * 2. Incluir este script:
  *    <script src="/assets/comments-system.js"></script>
  * 
  * 3. Inicializar con el ID único del reporte:
  *    initCommentsSystem('mi-reporte-unico-id');
+ *    
+ *    // Con opciones:
+ *    initCommentsSystem('mi-reporte', { theme: 'light' });
+ * 
+ * CÓMO COMENTAR:
+ * - Botón "+ Agregar comentario" → Abre popup directamente
+ * - Doble click en cualquier lugar → Comentario posicionado
  * 
  * Cada reporte mantiene sus comentarios separados en Firebase bajo:
  * /presentations/{presentationId}/comments
@@ -40,14 +58,44 @@ class SlideComments {
   constructor(options = {}) {
     this.presentationId = options.presentationId || 'default-report';
     this.theme = options.theme || 'dark'; // 'dark' o 'light'
-    this.userName = options.userName || localStorage.getItem('commenter_name') || null;
     this.userColor = options.userColor || this.getRandomColor();
     this.comments = {};
     this.activeSlide = 1;
     this.isAddingComment = false;
     this.currentFilter = 'slide';
     this.database = firebase.database();
+    
+    // Intentar obtener datos del usuario autenticado de Firebase Auth
+    const authUser = this.getAuthenticatedUser();
+    this.userName = authUser?.name || options.userName || localStorage.getItem('commenter_name') || null;
+    this.userEmail = authUser?.email || null;
+    
     this.init();
+  }
+
+  /**
+   * Obtiene los datos del usuario desde Firebase Auth si está autenticado
+   */
+  getAuthenticatedUser() {
+    try {
+      const auth = firebase.auth();
+      const user = auth.currentUser;
+      if (user) {
+        let name = user.displayName;
+        if (!name && user.email) {
+          // Extraer nombre del email (ej: "agustin.parraquini@tiendanube.com" -> "Agustin Parraquini")
+          const emailName = user.email.split('@')[0];
+          name = emailName
+            .split(/[._-]/)
+            .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+            .join(' ');
+        }
+        return { name, email: user.email };
+      }
+    } catch (e) {
+      console.log('Firebase Auth not available for comments:', e);
+    }
+    return null;
   }
 
   init() {
@@ -55,6 +103,7 @@ class SlideComments {
     this.createUI();
     this.loadComments();
     this.bindEvents();
+    // Solo pedir nombre si no está autenticado y no tiene nombre guardado
     if (!this.userName) this.askForName();
   }
 
@@ -191,6 +240,7 @@ class SlideComments {
       <div class="comments-filter">
         <button class="filter-tab active" data-filter="slide">Este slide</button>
         <button class="filter-tab" data-filter="open">Abiertos</button>
+        <button class="filter-tab" data-filter="closed">Cerrados</button>
         <button class="filter-tab" data-filter="all">Todos</button>
       </div>
       <div class="comments-panel-body">
@@ -377,6 +427,7 @@ class SlideComments {
       y, 
       slide: slide || this.activeSlide, 
       author: this.userName, 
+      email: this.userEmail,
       color: this.userColor, 
       timestamp: new Date().toISOString(), 
       resolved: false, 
@@ -393,15 +444,37 @@ class SlideComments {
     const comments = this.comments[this.presentationId] || [];
     const comment = comments.find(c => c.id === commentId);
     if (comment) {
+      if (!comment.replies) comment.replies = [];
       comment.replies.push({ 
         id: Date.now().toString(), 
         text, 
         author: this.userName, 
+        email: this.userEmail,
         color: this.userColor, 
         timestamp: new Date().toISOString() 
       });
       this.saveComments(); 
       this.renderComments();
+    }
+  }
+
+  goToSlide(slideNumber) {
+    // Intentar navegar al slide usando el sistema de presentación
+    const totalSlides = parseInt(document.querySelector('.ind')?.textContent?.match(/\/\s*(\d+)/)?.[1] || '1');
+    const currentSlide = this.detectCurrentSlide();
+    
+    if (slideNumber === currentSlide) return;
+    
+    // Intentar usar la API del sistema de slides si existe
+    if (window.Slides && typeof window.Slides.goto === 'function') {
+      window.Slides.goto(slideNumber);
+    } else {
+      // Simular navegación con teclas
+      const diff = slideNumber - currentSlide;
+      const key = diff > 0 ? 'ArrowRight' : 'ArrowLeft';
+      for (let i = 0; i < Math.abs(diff); i++) {
+        document.dispatchEvent(new KeyboardEvent('keydown', { key }));
+      }
     }
   }
 
@@ -451,11 +524,13 @@ class SlideComments {
     
     if (activeFilter === 'slide') filtered = comments.filter(c => c.slide === this.detectCurrentSlide());
     else if (activeFilter === 'open') filtered = comments.filter(c => !c.resolved);
+    else if (activeFilter === 'closed') filtered = comments.filter(c => c.resolved);
     
     if (filtered.length === 0) {
       const emptyMessages = {
         'slide': 'No hay comentarios en este slide',
         'open': 'No hay comentarios abiertos 🎉',
+        'closed': 'No hay comentarios cerrados',
         'all': 'No hay comentarios aún'
       };
       container.innerHTML = `<div class="comments-empty"><div class="comments-empty-icon">💭</div><p>${emptyMessages[activeFilter] || 'No hay comentarios'}</p><p style="font-size:12px;color:${t.textMuted}">Doble click en el slide para comentar</p></div>`;
@@ -472,22 +547,31 @@ class SlideComments {
       <div class="comment-item ${comment.resolved ? 'resolved' : ''}" data-id="${comment.id}">
         <div class="comment-header">
           <div class="comment-author">
-            <div class="comment-avatar" style="background:${comment.color}">${comment.author.charAt(0).toUpperCase()}</div>
-            <div class="comment-meta"><span class="comment-name">${comment.author}</span><span class="comment-time">${this.formatTime(comment.timestamp)}</span></div>
+            <div class="comment-avatar" style="background:${comment.color}">${comment.author?.charAt(0)?.toUpperCase() || '?'}</div>
+            <div class="comment-meta">
+              <span class="comment-name">${comment.author || 'Anónimo'}</span>
+              ${comment.email ? `<span class="comment-email" style="font-size:11px;color:${this.getThemeStyles().textMuted}">${comment.email}</span>` : ''}
+              <span class="comment-time">${this.formatTime(comment.timestamp)}</span>
+            </div>
           </div>
           <span class="comment-slide-badge">Slide ${comment.slide}</span>
         </div>
         <div class="comment-text">${this.escapeHtml(comment.text)}</div>
         <div class="comment-actions">
+          <button class="comment-action-btn" onclick="slideComments.goToSlide(${comment.slide})">📍 Ir</button>
           <button class="comment-action-btn" onclick="slideComments.showReplyInput('${comment.id}')">💬 Responder</button>
           <button class="comment-action-btn" onclick="slideComments.resolveComment('${comment.id}')">${comment.resolved ? '🔄 Reabrir' : '✓ Resolver'}</button>
           <button class="comment-action-btn" onclick="slideComments.deleteComment('${comment.id}')">🗑</button>
         </div>
-        ${comment.replies.length > 0 ? `<div class="comment-replies">${comment.replies.map(reply => `
+        ${comment.replies && comment.replies.length > 0 ? `<div class="comment-replies">${comment.replies.map(reply => `
           <div class="reply-item">
             <div class="comment-author" style="margin-bottom:6px">
-              <div class="comment-avatar" style="background:${reply.color};width:24px;height:24px;font-size:11px">${reply.author.charAt(0).toUpperCase()}</div>
-              <div class="comment-meta"><span class="comment-name" style="font-size:13px">${reply.author}</span><span class="comment-time">${this.formatTime(reply.timestamp)}</span></div>
+              <div class="comment-avatar" style="background:${reply.color};width:24px;height:24px;font-size:11px">${reply.author?.charAt(0)?.toUpperCase() || '?'}</div>
+              <div class="comment-meta">
+                <span class="comment-name" style="font-size:13px">${reply.author || 'Anónimo'}</span>
+                ${reply.email ? `<span class="comment-email" style="font-size:10px;color:${this.getThemeStyles().textMuted}">${reply.email}</span>` : ''}
+                <span class="comment-time">${this.formatTime(reply.timestamp)}</span>
+              </div>
             </div>
             <div class="comment-text" style="font-size:13px;margin:0">${this.escapeHtml(reply.text)}</div>
           </div>
@@ -564,23 +648,67 @@ let slideComments;
  * @param {string} options.theme - 'dark' o 'light' (default: 'dark')
  */
 function initCommentsSystem(presentationId, options = {}) {
-  const waitForAuth = () => {
-    // Si hay autenticación Firebase, esperar a que esté lista
+  // Helper para extraer nombre del email
+  const getNameFromEmail = (email) => {
+    if (!email) return null;
+    const emailName = email.split('@')[0];
+    return emailName
+      .split(/[._-]/)
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(' ');
+  };
+
+  const createCommentsSystem = (userName = null) => {
+    // Evitar crear múltiples instancias
+    if (window.slideComments) return;
+    
+    slideComments = new SlideComments({ 
+      presentationId: presentationId,
+      theme: options.theme || 'dark',
+      userName: userName
+    }); 
+    window.slideComments = slideComments;
+    console.log('Comments system initialized with user:', userName || '(asking for name)');
+  };
+
+  const initWithUser = () => {
+    try {
+      const auth = firebase.auth();
+      
+      // SIEMPRE usar onAuthStateChanged para obtener el usuario de forma confiable
+      const unsubscribe = auth.onAuthStateChanged((user) => {
+        unsubscribe(); // Solo necesitamos el primer evento
+        
+        if (user) {
+          const userName = user.displayName || getNameFromEmail(user.email);
+          console.log('Firebase Auth user found:', userName, user.email);
+          createCommentsSystem(userName);
+        } else {
+          console.log('No Firebase Auth user, will ask for name');
+          createCommentsSystem();
+        }
+      });
+    } catch (e) {
+      console.log('Firebase Auth not available:', e);
+      createCommentsSystem();
+    }
+  };
+
+  const waitForPageAuth = () => {
+    // Esperar a que la página muestre que el usuario está autenticado
+    // o que no haya sistema de auth (auth-overlay no existe)
     if (document.body.classList.contains('authenticated') || !document.getElementById('auth-overlay')) {
-      slideComments = new SlideComments({ 
-        presentationId: presentationId,
-        theme: options.theme || 'dark'
-      }); 
-      window.slideComments = slideComments;
+      // Pequeño delay para asegurar que Firebase Auth ha procesado el usuario
+      setTimeout(initWithUser, 100);
     } else {
-      setTimeout(waitForAuth, 500);
+      setTimeout(waitForPageAuth, 500);
     }
   };
   
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', waitForAuth);
+    document.addEventListener('DOMContentLoaded', waitForPageAuth);
   } else {
-    waitForAuth();
+    waitForPageAuth();
   }
 }
 

@@ -1,0 +1,94 @@
+# ================================
+# Archivos Sensibles - NUNCA COMMITEAR
+# ================================
+
+# Variables de entorno
+.env
+.env.local
+.env.development
+.env.production
+.env*.local
+
+# Archivos de configuración con secretos
+config.local.js
+secrets.js
+firebase-admin*.json
+service-account*.json
+*-credentials.json
+
+# ================================
+# Archivos de datos
+# ================================
+
+# Excel y datos
+*.xlsx
+*.xls
+*.csv
+!sample-data.csv
+
+# Bases de datos locales
+*.db
+*.sqlite
+*.sqlite3
+
+# ================================
+# Sistema y temporales
+# ================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editores
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node (si se usa en el futuro)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Python (si se usa)
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+venv/
+.venv/
+
+# ================================
+# Build y deploy
+# ================================
+
+dist/
+build/
+*.min.js.map
+
+# Logs
+*.log
+logs/
+
+# Temporales
+tmp/
+temp/
+.cache/
+
+# ================================
+# Notas privadas
+# ================================
+NOTAS_PRIVADAS.md
+TODO_PERSONAL.md
+draft-*
+
