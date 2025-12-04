@@ -11,6 +11,18 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Inter',sans-serif;background:#0a0a1a}
+        
+        /* Menú de navegación entre reportes */
+        .report-nav{position:fixed;top:20px;left:20px;z-index:9990}
+        .report-nav-btn{width:44px;height:44px;background:#1a1f3a;border:1px solid #2d3748;border-radius:12px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+        .report-nav-btn:hover{background:#2d3748;transform:scale(1.05)}
+        .report-nav-menu{position:absolute;top:52px;left:0;background:#1a1f3a;border:1px solid #2d3748;border-radius:12px;min-width:220px;padding:8px;display:none;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+        .report-nav-menu.open{display:block}
+        .report-nav-section{padding:8px 12px 4px;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:1px}
+        .report-nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#9CA3AF;text-decoration:none;font-size:13px;transition:all .2s}
+        .report-nav-item:hover{background:#2d3748;color:#fff}
+        .report-nav-item.active{background:rgba(89,169,255,.13);color:#59A9FF}
+        .report-nav-item.home{border-bottom:1px solid #2d3748;margin-bottom:8px;padding-bottom:12px}
         .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
         .s{width:100%;max-width:1100px;background:#fff;border-radius:10px;padding:28px 36px;min-height:580px;display:flex;flex-direction:column}
         .s.dk{background:#0a0a1a;color:#fff}
@@ -57,6 +69,37 @@
     </style>
 </head>
 <body>
+<!-- Menú de navegación entre reportes -->
+<div class="report-nav" id="report-nav">
+    <button class="report-nav-btn" onclick="toggleReportMenu()" title="Ver otros reportes">📊</button>
+    <div class="report-nav-menu" id="report-nav-menu">
+        <a href="index.html" class="report-nav-item home">
+            <span>🏠</span> Hub Principal
+        </a>
+        <div class="report-nav-section">💬 Nuvem Chat</div>
+        <a href="chat/2024/noviembre.html" class="report-nav-item">
+            <span>📄</span> Noviembre 2024
+        </a>
+        <a href="q4-2025.html" class="report-nav-item active">
+            <span>📄</span> Q4 2025
+        </a>
+        <div class="report-nav-section">✨ Lumi</div>
+        <div class="report-nav-item" style="color:#4B5563;cursor:default">
+            <span>📄</span> Próximamente...
+        </div>
+    </div>
+</div>
+<script>
+    function toggleReportMenu() {
+        document.getElementById('report-nav-menu').classList.toggle('open');
+    }
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.report-nav')) {
+            document.getElementById('report-nav-menu').classList.remove('open');
+        }
+    });
+</script>
+
 <div id="root"></div>
 <script type="text/babel">
 const {useState,useEffect,useRef}=React;
