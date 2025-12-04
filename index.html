@@ -2563,7 +2563,20 @@ class SlideComments {
 
   addComment({ text, x, y, slide }) {
     if (!this.requireAuth()) return;
-    const comment = { id: Date.now().toString(), text, x, y, slide, author: this.userName, email: this.userEmail, color: this.userColor, timestamp: new Date().toISOString(), resolved: false, replies: [] };
+    const comment = { 
+      id: Date.now().toString(), 
+      text, 
+      x, 
+      y, 
+      slide, 
+      author: this.userName, 
+      email: this.userEmail, 
+      photo: this.userPhoto,
+      color: this.userColor, 
+      timestamp: new Date().toISOString(), 
+      resolved: false, 
+      replies: [] 
+    };
     const comments = this.comments[this.presentationId] || [];
     comments.push(comment);
     this.comments[this.presentationId] = comments;
@@ -2592,6 +2605,7 @@ class SlideComments {
         text: text, 
         author: this.userName,
         email: this.userEmail,
+        photo: this.userPhoto,
         color: this.userColor, 
         timestamp: new Date().toISOString() 
       };
@@ -2649,11 +2663,15 @@ class SlideComments {
       <div class="comment-item ${comment.resolved ? 'resolved' : ''}" data-id="${comment.id}">
         <div class="comment-header">
           <div class="comment-author">
-            <div class="comment-avatar" style="background:${comment.color}">${comment.author ? comment.author.charAt(0).toUpperCase() : '?'}</div>
+            ${comment.photo 
+              ? `<img src="${comment.photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+              : ''
+            }
+            <div class="comment-avatar" style="background:${comment.color};${comment.photo ? 'display:none' : ''}">${comment.author ? comment.author.charAt(0).toUpperCase() : '?'}</div>
             <div class="comment-meta">
               <span class="comment-name">${comment.author || 'Anónimo'}</span>
-              ${comment.email ? `<span style="font-size:10px;color:#9CA3AF;display:block">${comment.email}</span>` : ''}
-              <span class="comment-time">${this.formatTime(comment.timestamp)}</span>
+              ${comment.email ? `<span style="font-size:11px;color:#6B7280;display:block;margin-top:1px">${comment.email}</span>` : ''}
+              <span class="comment-time" style="display:block;margin-top:2px">${this.formatTime(comment.timestamp)}</span>
             </div>
           </div>
           <span class="comment-slide-badge">Slide ${comment.slide}</span>
@@ -2668,10 +2686,14 @@ class SlideComments {
         ${comment.replies && comment.replies.length > 0 ? `<div class="comment-replies">${comment.replies.map(reply => `
           <div class="reply-item">
             <div class="comment-author" style="margin-bottom:6px">
-              <div class="comment-avatar" style="background:${reply.color};width:24px;height:24px;font-size:11px">${reply.author ? reply.author.charAt(0).toUpperCase() : '?'}</div>
+              ${reply.photo 
+                ? `<img src="${reply.photo}" style="width:24px;height:24px;border-radius:50%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                : ''
+              }
+              <div class="comment-avatar" style="background:${reply.color};width:24px;height:24px;font-size:11px;${reply.photo ? 'display:none' : ''}">${reply.author ? reply.author.charAt(0).toUpperCase() : '?'}</div>
               <div class="comment-meta">
                 <span class="comment-name" style="font-size:13px">${reply.author || 'Anónimo'}</span>
-                ${reply.email ? `<span style="font-size:9px;color:#9CA3AF">${reply.email}</span>` : ''}
+                ${reply.email ? `<span style="font-size:10px;color:#6B7280;display:block">${reply.email}</span>` : ''}
                 <span class="comment-time">${this.formatTime(reply.timestamp)}</span>
               </div>
             </div>
