@@ -2461,7 +2461,16 @@ class SlideComments {
 }
 
 let slideComments;
-document.addEventListener('DOMContentLoaded', () => { slideComments = new SlideComments({ presentationId: 'nuvemchat-nov-2025' }); });
+document.addEventListener('DOMContentLoaded', () => { 
+  console.log('🚀 Iniciando sistema de comentarios...');
+  try {
+    slideComments = new SlideComments({ presentationId: 'nuvemchat-nov-2025' }); 
+    window.slideComments = slideComments;
+    console.log('✅ Sistema de comentarios cargado');
+  } catch(e) {
+    console.error('❌ Error cargando comentarios:', e);
+  }
+});
 </script>
 </body>
 </html>
