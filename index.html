@@ -2268,7 +2268,14 @@ class SlideComments {
   bindEvents() {
     // DOBLE CLICK en cualquier lugar para comentar
     document.addEventListener('dblclick', (e) => {
-      if (e.target.closest('.comments-panel') || e.target.closest('.comments-toggle') || e.target.closest('.comment-popup') || e.target.closest('.name-modal')) return;
+      // Excluir: panel de comentarios, toggle, popup, modal de nombre, botones de navegación
+      if (e.target.closest('.comments-panel') || 
+          e.target.closest('.comments-toggle') || 
+          e.target.closest('.comment-popup') || 
+          e.target.closest('.name-modal') ||
+          e.target.closest('.nav') ||
+          e.target.closest('.btn') ||
+          e.target.closest('button')) return;
       this.openCommentPopup(e);
     });
     
