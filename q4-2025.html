@@ -152,8 +152,26 @@ function S32(){return(<div className="s dk ctr" style={{justifyContent:"center"}
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
-<!-- Sistema de Comentarios -->
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<!-- Sistema de Comentarios con Firebase -->
 <script>
+// Configuración Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBhrC9gzxfJrf-8_r0X3KpF8_PW0MgB3Gg",
+  authDomain: "reports-ai-b02e8.firebaseapp.com",
+  databaseURL: "https://reports-ai-b02e8-default-rtdb.firebaseio.com",
+  projectId: "reports-ai-b02e8",
+  storageBucket: "reports-ai-b02e8.firebasestorage.app",
+  messagingSenderId: "497102969122",
+  appId: "1:497102969122:web:921daf9a64b9dacef0ed7b"
+};
+
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 /**
  * Sistema de Comentarios para Presentaciones HTML
  * Nuvemshop Reports - Q4 2025
@@ -167,7 +185,7 @@ class SlideComments {
     this.activeSlide = 1;
     this.isAddingComment = false;
     this.pendingPosition = null;
-    this.useLocalStorage = true;
+    this.useFirebase = true;
     this.init();
   }
 
@@ -387,11 +405,20 @@ class SlideComments {
     if (index > -1) { comments.splice(index, 1); this.saveComments(); this.renderComments(); this.updateBadge(); }
   }
 
-  saveComments() { localStorage.setItem('slide_comments', JSON.stringify(this.comments)); }
+  saveComments() {
+    const commentsArray = this.comments[this.presentationId] || [];
+    database.ref(`presentations/${this.presentationId}/comments`).set(commentsArray);
+  }
+  
   loadComments() {
-    const saved = localStorage.getItem('slide_comments');
-    this.comments = saved ? JSON.parse(saved) : {};
-    this.renderComments(); this.updateBadge();
+    const ref = database.ref(`presentations/${this.presentationId}/comments`);
+    // Escuchar cambios en tiempo real
+    ref.on('value', (snapshot) => {
+      const data = snapshot.val();
+      this.comments[this.presentationId] = data || [];
+      this.renderComments();
+      this.updateBadge();
+    });
   }
 
   renderComments(filter = 'all') {
