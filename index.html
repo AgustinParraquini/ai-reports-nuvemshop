@@ -2345,12 +2345,29 @@ class SlideComments {
   }
 
   addReply(commentId, text) {
-    if (!this.userName) { this.askForName(); return; }
+    console.log('📨 addReply llamado:', commentId, text);
+    if (!this.userName) { 
+      console.log('⚠️ No hay userName, pidiendo nombre');
+      this.askForName(); 
+      return; 
+    }
     const comments = this.comments[this.presentationId] || [];
     const comment = comments.find(c => c.id === commentId);
     if (comment) {
-      comment.replies.push({ id: Date.now().toString(), text, author: this.userName, color: this.userColor, timestamp: new Date().toISOString() });
+      console.log('✅ Agregando respuesta al comentario');
+      comment.replies = comment.replies || [];
+      comment.replies.push({ 
+        id: Date.now().toString(), 
+        text, 
+        author: this.userName, 
+        color: this.userColor, 
+        timestamp: new Date().toISOString() 
+      });
       this.saveComments();
+      // Re-renderizar para mostrar la respuesta
+      this.renderComments();
+    } else {
+      console.log('❌ No se encontró el comentario:', commentId);
     }
   }
 
@@ -2427,17 +2444,46 @@ class SlideComments {
         </div>
       </div>
     `).join('');
+    const self = this;
     container.querySelectorAll('.reply-input-container').forEach(el => {
       const btn = el.querySelector('.new-comment-submit');
       const textarea = el.querySelector('textarea');
       const commentId = el.id.replace('reply-', '');
-      btn.onclick = () => { const text = textarea.value.trim(); if (text) { this.addReply(commentId, text); el.style.display = 'none'; textarea.value = ''; } };
+      btn.onclick = () => { 
+        const text = textarea.value.trim(); 
+        if (text) { 
+          console.log('💬 Enviando respuesta:', text, 'a comentario:', commentId);
+          self.addReply(commentId, text); 
+          el.style.display = 'none'; 
+          textarea.value = ''; 
+        } else {
+          textarea.style.borderColor = '#EC3F41';
+          textarea.placeholder = '⚠️ Escribe algo...';
+        }
+      };
+      // También permitir enviar con Cmd+Enter
+      textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+          btn.click();
+        }
+      });
     });
   }
 
   showReplyInput(commentId) {
+    console.log('📝 Mostrando input para responder a:', commentId);
     const container = document.getElementById(`reply-${commentId}`);
-    if (container) { container.style.display = 'block'; container.querySelector('textarea').focus(); }
+    if (container) { 
+      container.style.display = 'block'; 
+      const textarea = container.querySelector('textarea');
+      if (textarea) {
+        textarea.style.borderColor = '#E5E7EB';
+        textarea.placeholder = 'Escribe tu respuesta...';
+        setTimeout(() => textarea.focus(), 50);
+      }
+    } else {
+      console.log('⚠️ No se encontró container para:', commentId);
+    }
   }
 
   goToComment(commentId) {
