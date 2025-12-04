@@ -2192,6 +2192,10 @@ const database = firebase.database();
 const auth = firebase.auth();
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
+// Agregar scope para obtener foto de perfil
+googleProvider.addScope('profile');
+googleProvider.addScope('email');
+
 // Dominios permitidos
 const ALLOWED_DOMAINS = ['tiendanube.com', 'nuvemshop.com'];
 
