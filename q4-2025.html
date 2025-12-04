@@ -386,9 +386,9 @@ class SlideComments {
     panel.innerHTML = `
       <div class="comments-panel-header"><h3>💬 Comentarios</h3><button class="comments-panel-close">&times;</button></div>
       <div class="comments-filter">
-        <button class="filter-tab active" data-filter="all">Todos</button>
-        <button class="filter-tab" data-filter="slide">Este slide</button>
+        <button class="filter-tab active" data-filter="slide">Este slide</button>
         <button class="filter-tab" data-filter="open">Abiertos</button>
+        <button class="filter-tab" data-filter="all">Todos</button>
       </div>
       <div class="comments-panel-body">
         <div class="comments-empty"><div class="comments-empty-icon">💭</div><p>No hay comentarios aún</p><p style="font-size:12px">Doble click en el slide para comentar</p></div>
@@ -467,6 +467,21 @@ class SlideComments {
         document.querySelectorAll('.comment-popup').forEach(p => p.remove());
       }
     });
+    
+    // Actualizar comentarios cuando cambia el slide (si está en filtro "slide")
+    let lastSlide = this.detectCurrentSlide();
+    const slideObserver = new MutationObserver(() => {
+      const currentSlide = this.detectCurrentSlide();
+      if (currentSlide !== lastSlide) {
+        lastSlide = currentSlide;
+        const activeFilter = this.panel.querySelector('.filter-tab.active')?.dataset.filter;
+        if (activeFilter === 'slide') {
+          this.renderComments('slide');
+        }
+      }
+    });
+    const indicator = document.querySelector('.ind');
+    if (indicator) slideObserver.observe(indicator, { childList: true, characterData: true, subtree: true });
   }
   
   openCommentPopup(e) {
@@ -573,17 +588,28 @@ class SlideComments {
     });
   }
 
-  renderComments(filter = 'all') {
+  renderComments(filter = 'slide') {
     const container = this.panel.querySelector('.comments-panel-body');
     const comments = this.comments[this.presentationId] || [];
     let filtered = comments;
     if (filter === 'slide') filtered = comments.filter(c => c.slide === this.detectCurrentSlide());
     else if (filter === 'open') filtered = comments.filter(c => !c.resolved);
     if (filtered.length === 0) {
-      container.innerHTML = `<div class="comments-empty"><div class="comments-empty-icon">💭</div><p>${filter === 'slide' ? 'No hay comentarios en este slide' : 'No hay comentarios aún'}</p></div>`;
+      const emptyMessages = {
+        'slide': 'No hay comentarios en este slide',
+        'open': 'No hay comentarios abiertos 🎉',
+        'all': 'No hay comentarios aún'
+      };
+      container.innerHTML = `<div class="comments-empty"><div class="comments-empty-icon">💭</div><p>${emptyMessages[filter] || 'No hay comentarios'}</p><p style="font-size:12px;color:#9CA3AF">Doble click en el slide para comentar</p></div>`;
       return;
     }
-    filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    // Ordenar: primero abiertos, luego cerrados. Dentro de cada grupo, por fecha (más reciente primero)
+    filtered.sort((a, b) => {
+      // Primero por estado (abiertos antes que cerrados)
+      if (a.resolved !== b.resolved) return a.resolved ? 1 : -1;
+      // Luego por fecha (más reciente primero)
+      return new Date(b.timestamp) - new Date(a.timestamp);
+    });
     container.innerHTML = filtered.map(comment => `
       <div class="comment-item ${comment.resolved ? 'resolved' : ''}" data-id="${comment.id}">
         <div class="comment-header">
