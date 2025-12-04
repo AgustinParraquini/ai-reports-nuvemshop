@@ -280,7 +280,7 @@ class SlideComments {
         <button class="filter-tab" data-filter="open">Abiertos</button>
       </div>
       <div class="comments-panel-body">
-        <div class="comments-empty"><div class="comments-empty-icon">💭</div><p>No hay comentarios aún</p><p style="font-size:12px">Haz clic en "Agregar" para dejar uno</p></div>
+        <div class="comments-empty"><div class="comments-empty-icon">💭</div><p>No hay comentarios aún</p><p style="font-size:12px">Doble click en el slide para comentar</p></div>
       </div>
       <div class="comments-panel-footer"><button class="new-comment-submit" id="add-comment-btn" style="width:100%">➕ Agregar comentario</button></div>
     `;
@@ -289,8 +289,15 @@ class SlideComments {
 
     const hint = document.createElement('div');
     hint.className = 'add-comment-hint';
-    hint.textContent = '📍 Haz clic donde quieras dejar el comentario (ESC para cancelar)';
+    hint.textContent = '📍 Haz clic donde quieras comentar (ESC para cancelar)';
     document.body.appendChild(hint);
+    
+    // Tooltip de ayuda
+    const helpTip = document.createElement('div');
+    helpTip.style.cssText = 'position:fixed;bottom:80px;left:20px;background:#010B23;color:#9CA3AF;padding:8px 12px;border-radius:6px;font-size:11px;z-index:9998;opacity:0.8';
+    helpTip.innerHTML = '💡 <b style="color:white">Doble click</b> en cualquier lugar para comentar';
+    document.body.appendChild(helpTip);
+    setTimeout(() => { helpTip.style.transition = 'opacity 0.5s'; helpTip.style.opacity = '0'; setTimeout(() => helpTip.remove(), 500); }, 5000);
 
     panel.querySelector('.comments-panel-close').onclick = () => this.togglePanel();
     panel.querySelector('#add-comment-btn').onclick = () => this.startAddingComment();
@@ -327,21 +334,41 @@ class SlideComments {
 
   togglePanel() { this.panel.classList.toggle('open'); }
   startAddingComment() { this.isAddingComment = true; document.body.classList.add('adding-comment-mode'); this.panel.classList.remove('open'); }
-  cancelAddingComment() { this.isAddingComment = false; document.body.classList.remove('adding-comment-mode'); this.pendingPosition = null; }
+  cancelAddingComment() { this.isAddingComment = false; document.body.classList.remove('adding-comment-mode'); }
 
   bindEvents() {
+    // Click cuando está en modo agregar comentario
     document.addEventListener('click', (e) => {
       if (!this.isAddingComment) return;
-      if (e.target.closest('.comments-panel') || e.target.closest('.comments-toggle') || e.target.closest('.comment-marker')) return;
-      const slide = this.detectCurrentSlide();
-      const rect = document.querySelector('.wrap')?.getBoundingClientRect() || document.body.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
-      const y = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
-      this.pendingPosition = { x, y, slide };
-      this.showCommentInput(e.clientX, e.clientY);
-      this.cancelAddingComment();
+      if (e.target.closest('.comments-panel') || e.target.closest('.comments-toggle') || e.target.closest('.comment-marker') || e.target.closest('.comment-popup')) return;
+      this.openCommentPopup(e);
     });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && this.isAddingComment) this.cancelAddingComment(); });
+    
+    // DOBLE CLICK en cualquier lugar para comentar directamente
+    document.addEventListener('dblclick', (e) => {
+      if (e.target.closest('.comments-panel') || e.target.closest('.comments-toggle') || e.target.closest('.comment-marker') || e.target.closest('.comment-popup') || e.target.closest('.name-modal')) return;
+      this.openCommentPopup(e);
+    });
+    
+    document.addEventListener('keydown', (e) => { 
+      if (e.key === 'Escape') {
+        this.cancelAddingComment();
+        document.querySelectorAll('.comment-popup').forEach(p => p.remove());
+      }
+    });
+  }
+  
+  openCommentPopup(e) {
+    // Cerrar popups anteriores
+    document.querySelectorAll('.comment-popup').forEach(p => p.remove());
+    this.cancelAddingComment();
+    
+    const slide = this.detectCurrentSlide();
+    const rect = document.querySelector('.wrap')?.getBoundingClientRect() || document.body.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+    const y = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
+    
+    this.showCommentInput(e.clientX, e.clientY, { x, y, slide });
   }
 
   detectCurrentSlide() {
@@ -353,11 +380,13 @@ class SlideComments {
     return 1;
   }
 
-  showCommentInput(x, y) {
+  showCommentInput(screenX, screenY, position) {
     const popup = document.createElement('div');
-    popup.style.cssText = `position:fixed;left:${Math.min(x,window.innerWidth-320)}px;top:${Math.min(y,window.innerHeight-200)}px;background:white;padding:16px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.2);z-index:10003;width:300px`;
+    popup.className = 'comment-popup';
+    popup.style.cssText = `position:fixed;left:${Math.min(screenX,window.innerWidth-320)}px;top:${Math.min(screenY,window.innerHeight-200)}px;background:white;padding:16px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.2);z-index:10003;width:300px`;
     popup.innerHTML = `
-      <textarea class="new-comment-input" placeholder="Escribe tu comentario..." rows="3" autofocus></textarea>
+      <div style="margin-bottom:8px;font-size:12px;color:#6B7280">📍 Slide ${position.slide}</div>
+      <textarea class="new-comment-input" placeholder="Escribe tu comentario..." rows="3"></textarea>
       <div style="display:flex;gap:8px;margin-top:10px">
         <button class="new-comment-submit" style="flex:1">Publicar</button>
         <button class="comment-action-btn" style="padding:10px 16px">Cancelar</button>
@@ -367,13 +396,25 @@ class SlideComments {
     const textarea = popup.querySelector('textarea');
     const submitBtn = popup.querySelector('.new-comment-submit');
     const cancelBtn = popup.querySelector('.comment-action-btn');
-    textarea.focus();
+    
+    // Focus después de un pequeño delay para asegurar que funcione
+    setTimeout(() => textarea.focus(), 50);
+    
     submitBtn.onclick = () => {
       const text = textarea.value.trim();
-      if (text && this.pendingPosition) { this.addComment({ text, ...this.pendingPosition }); popup.remove(); }
+      if (text) {
+        this.addComment({ text, x: position.x, y: position.y, slide: position.slide });
+        popup.remove();
+      } else {
+        textarea.style.borderColor = '#EC3F41';
+        textarea.placeholder = '⚠️ Escribe algo...';
+      }
     };
-    cancelBtn.onclick = () => { this.pendingPosition = null; popup.remove(); };
-    textarea.addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submitBtn.click(); });
+    cancelBtn.onclick = () => popup.remove();
+    textarea.addEventListener('keydown', (e) => { 
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submitBtn.click();
+      if (e.key === 'Escape') popup.remove();
+    });
   }
 
   addComment({ text, x, y, slide }) {
