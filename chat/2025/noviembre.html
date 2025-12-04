@@ -2665,7 +2665,8 @@ class SlideComments {
     
     // Actualizar comentarios cuando cambia el slide (si está en filtro "slide")
     let lastSlide = this.detectCurrentSlide();
-    const slideObserver = new MutationObserver(() => {
+    
+    const checkSlideChange = () => {
       const currentSlide = this.detectCurrentSlide();
       if (currentSlide !== lastSlide) {
         lastSlide = currentSlide;
@@ -2673,9 +2674,34 @@ class SlideComments {
           this.renderComments();
         }
       }
+    };
+    
+    // Escuchar clicks en botones de navegación
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.btn') || e.target.closest('.nav')) {
+        setTimeout(checkSlideChange, 50);
+      }
     });
-    const indicator = document.querySelector('.indicator');
-    if (indicator) slideObserver.observe(indicator, { childList: true, characterData: true, subtree: true });
+    
+    // Escuchar teclas de flecha
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        setTimeout(checkSlideChange, 50);
+      }
+    });
+    
+    // También observar cambios en el indicador como respaldo
+    const setupIndicatorObserver = () => {
+      const indicator = document.querySelector('.indicator');
+      if (indicator) {
+        const slideObserver = new MutationObserver(checkSlideChange);
+        slideObserver.observe(indicator, { childList: true, characterData: true, subtree: true });
+      } else {
+        // Reintentar si React aún no renderizó el indicador
+        setTimeout(setupIndicatorObserver, 500);
+      }
+    };
+    setupIndicatorObserver();
   }
   
   openCommentPopup(e) {
