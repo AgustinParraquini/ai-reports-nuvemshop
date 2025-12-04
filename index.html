@@ -2388,6 +2388,7 @@ class SlideComments {
         <button class="filter-tab active" data-filter="all">Todos</button>
         <button class="filter-tab" data-filter="slide">Este slide</button>
         <button class="filter-tab" data-filter="open">Abiertos</button>
+        <button class="filter-tab" data-filter="resolved">Cerrados</button>
       </div>
       <div class="comments-panel-body">
         <div class="comments-empty"><div class="comments-empty-icon">💭</div><p>No hay comentarios aún</p><p style="font-size:12px">Doble click en el slide para comentar</p></div>
@@ -2667,10 +2668,21 @@ class SlideComments {
     const container = this.panel.querySelector('.comments-panel-body');
     const comments = this.comments[this.presentationId] || [];
     let filtered = comments;
-    if (filter === 'slide') filtered = comments.filter(c => c.slide === this.detectCurrentSlide());
-    else if (filter === 'open') filtered = comments.filter(c => !c.resolved);
+    let emptyMessage = 'No hay comentarios aún';
+    
+    if (filter === 'slide') {
+      filtered = comments.filter(c => c.slide === this.detectCurrentSlide());
+      emptyMessage = 'No hay comentarios en este slide';
+    } else if (filter === 'open') {
+      filtered = comments.filter(c => !c.resolved);
+      emptyMessage = 'No hay comentarios abiertos';
+    } else if (filter === 'resolved') {
+      filtered = comments.filter(c => c.resolved);
+      emptyMessage = 'No hay comentarios cerrados';
+    }
+    
     if (filtered.length === 0) {
-      container.innerHTML = `<div class="comments-empty"><div class="comments-empty-icon">💭</div><p>${filter === 'slide' ? 'No hay comentarios en este slide' : 'No hay comentarios aún'}</p><p style="font-size:12px">Doble click en el slide para comentar</p></div>`;
+      container.innerHTML = `<div class="comments-empty"><div class="comments-empty-icon">${filter === 'resolved' ? '✅' : '💭'}</div><p>${emptyMessage}</p><p style="font-size:12px">${filter === 'resolved' ? 'Los comentarios resueltos aparecerán aquí' : 'Doble click en el slide para comentar'}</p></div>`;
       return;
     }
     filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
