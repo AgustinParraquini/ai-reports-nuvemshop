@@ -2404,6 +2404,7 @@ class SlideComments {
         </div>
         <div class="comment-text">${this.escapeHtml(comment.text)}</div>
         <div class="comment-actions">
+          <button class="comment-action-btn" onclick="slideComments.goToComment('${comment.id}')" style="color:#59A9FF;font-weight:600">📍 Ir</button>
           <button class="comment-action-btn" onclick="slideComments.showReplyInput('${comment.id}')">💬 Responder</button>
           <button class="comment-action-btn" onclick="slideComments.resolveComment('${comment.id}')">${comment.resolved ? '🔄 Reabrir' : '✓ Resolver'}</button>
           <button class="comment-action-btn" onclick="slideComments.deleteComment('${comment.id}')">🗑</button>
@@ -2437,6 +2438,92 @@ class SlideComments {
   showReplyInput(commentId) {
     const container = document.getElementById(`reply-${commentId}`);
     if (container) { container.style.display = 'block'; container.querySelector('textarea').focus(); }
+  }
+
+  goToComment(commentId) {
+    const comments = this.comments[this.presentationId] || [];
+    const comment = comments.find(c => c.id === commentId);
+    if (!comment) return;
+    
+    // Navegar al slide correcto
+    const targetSlide = comment.slide;
+    const currentSlide = this.detectCurrentSlide();
+    
+    if (targetSlide !== currentSlide) {
+      // Simular clicks en los botones de navegación
+      const diff = targetSlide - currentSlide;
+      const btn = diff > 0 
+        ? document.querySelector('.btn:last-child') // Siguiente
+        : document.querySelector('.btn:first-child'); // Anterior
+      
+      if (btn) {
+        for (let i = 0; i < Math.abs(diff); i++) {
+          setTimeout(() => btn.click(), i * 100);
+        }
+      }
+    }
+    
+    // Mostrar marcador visual en la posición del comentario
+    setTimeout(() => {
+      this.showCommentMarker(comment);
+    }, Math.abs(targetSlide - currentSlide) * 100 + 200);
+    
+    // Cerrar panel
+    this.panel.classList.remove('open');
+  }
+  
+  showCommentMarker(comment) {
+    // Eliminar marcadores anteriores
+    document.querySelectorAll('.comment-position-marker').forEach(m => m.remove());
+    
+    // Crear marcador visual
+    const marker = document.createElement('div');
+    marker.className = 'comment-position-marker';
+    marker.style.cssText = `
+      position: fixed;
+      left: ${comment.x}%;
+      top: ${comment.y}%;
+      width: 40px;
+      height: 40px;
+      background: #59A9FF;
+      border: 3px solid white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 4px 20px rgba(89,169,255,0.6);
+      z-index: 9998;
+      animation: pulseMarker 1.5s ease-in-out infinite;
+      cursor: pointer;
+    `;
+    marker.innerHTML = '💬';
+    marker.title = `${comment.author}: ${comment.text}`;
+    marker.onclick = () => marker.remove();
+    
+    // Agregar animación
+    if (!document.getElementById('marker-animation')) {
+      const style = document.createElement('style');
+      style.id = 'marker-animation';
+      style.textContent = `
+        @keyframes pulseMarker {
+          0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(89,169,255,0.6); }
+          50% { transform: scale(1.2); box-shadow: 0 4px 30px rgba(89,169,255,0.9); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(marker);
+    
+    // Eliminar después de 5 segundos
+    setTimeout(() => {
+      marker.style.transition = 'opacity 0.5s';
+      marker.style.opacity = '0';
+      setTimeout(() => marker.remove(), 500);
+    }, 5000);
   }
 
   updateBadge() {
