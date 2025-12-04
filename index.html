@@ -2503,8 +2503,12 @@ class SlideComments {
     marker.title = `Click para ver el comentario de ${comment.author}`;
     
     // Al hacer click, abrir panel y mostrar el comentario específico
-    marker.onclick = () => {
-      this.openCommentInPanel(comment.id);
+    const self = this;
+    marker.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('🎯 Click en marcador, abriendo comentario:', comment.id);
+      self.openCommentInPanel(comment.id);
       marker.remove();
     };
     
@@ -2543,6 +2547,8 @@ class SlideComments {
   }
   
   openCommentInPanel(commentId) {
+    console.log('📂 Abriendo panel para comentario:', commentId);
+    
     // Abrir panel
     this.panel.classList.add('open');
     
@@ -2550,6 +2556,8 @@ class SlideComments {
     setTimeout(() => {
       // Buscar el comentario en el panel
       const commentEl = this.panel.querySelector(`[data-id="${commentId}"]`);
+      console.log('🔍 Elemento encontrado:', commentEl);
+      
       if (commentEl) {
         // Scroll al comentario
         commentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2557,6 +2565,8 @@ class SlideComments {
         // Resaltar el comentario
         commentEl.classList.add('highlighted');
         setTimeout(() => commentEl.classList.remove('highlighted'), 3000);
+      } else {
+        console.log('⚠️ No se encontró el comentario con id:', commentId);
       }
     }, 300);
   }
