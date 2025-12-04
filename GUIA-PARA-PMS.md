@@ -2,90 +2,75 @@
 
 Hola! Les comparto el nuevo sistema para los reportes mensuales de *Chat* y *Lumi*. La idea es documentar la evolución de cada producto mes a mes y que todos podamos colaborar.
 
----
+———
 
-*🔗 Acceso*
+🔗 *Acceso*
 https://agustinparraquini.github.io/nuvemchat-report-nov2025/
 
-> Loguearse con mail de `@tiendanube.com` o `@nuvemshop.com`
+Loguearse con mail de @tiendanube.com o @nuvemshop.com
 
----
+———
 
-*📊 Estructura*
+📊 *Estructura*
 
-```
-Hub Principal
-├── 💬 Nuvem Chat
-│   ├── chat/2024/noviembre.html
-│   ├── chat/2024/diciembre.html
-│   └── ...
-└── ✨ Lumi
-    ├── lumi/2024/noviembre.html
-    └── ...
-```
+• Hub Principal → todos los reportes
+• 💬 Chat → `chat/2024/noviembre.html`, `chat/2024/diciembre.html`, etc
+• ✨ Lumi → `lumi/2024/noviembre.html`, etc
 
-El botón 📊 (arriba a la izquierda) permite saltar entre reportes.
+El botón 📊 (arriba a la izquierda en cada reporte) permite saltar entre reportes.
 
----
+———
 
-*💬 Comentarios*
+💬 *Comentarios*
 
-• Doble click en el slide → comentar
-• Se sincronizan en tiempo real
-• Cada reporte tiene sus propios comentarios
+• Doble click en cualquier parte del slide → comentar
+• Se sincronizan en tiempo real entre todos
+• Cada reporte tiene sus propios comentarios (no se mezclan)
 
----
+———
 
-*🛠️ Crear un reporte nuevo*
+🛠️ *Crear un reporte nuevo*
 
-*Opción 1: Con Cursor AI (recomendado)*
+*Con Cursor AI (recomendado):*
 Abrir el proyecto en Cursor y pedir:
-> "Creá el reporte de [MES] [AÑO] para [Chat/Lumi] basándote en Data Chat.xlsx"
+"Creá el reporte de [MES] [AÑO] para [Chat/Lumi] basándote en Data Chat.xlsx"
 
-*Opción 2: Manual*
-```
-# 1. Copiar reporte existente
-cp chat/2024/noviembre.html chat/2024/diciembre.html
+*Manual:*
+1️⃣ Copiar reporte existente
+`cp chat/2024/noviembre.html chat/2024/diciembre.html`
 
-# 2. Editar datos del nuevo mes
+2️⃣ Editar datos del nuevo mes
 
-# 3. Agregar link en index.html (sidebar y recientes)
+3️⃣ Agregar link en index.html (sidebar y recientes)
 
-# 4. Publicar
-git add .
-git commit -m "feat(chat): add diciembre 2024 report"
-git push origin main
-```
+4️⃣ Publicar
+`git add . && git commit -m "feat(chat): add diciembre 2024" && git push`
 
----
+———
 
-*📁 Nombres de archivos*
+📁 *Nombres de archivos*
 
-| Producto | Ruta |
-|----------|------|
-| Chat mensual | `chat/[año]/[mes].html` |
-| Lumi mensual | `lumi/[año]/[mes].html` |
-| Especiales | `[nombre]-[año].html` |
+• Chat mensual → `chat/[año]/[mes].html`
+• Lumi mensual → `lumi/[año]/[mes].html`
+• Especiales → `[nombre]-[año].html`
 
-Meses en español sin acentos: `enero`, `febrero`, `marzo`, `abril`, `mayo`, `junio`, `julio`, `agosto`, `septiembre`, `octubre`, `noviembre`, `diciembre`
+Meses: enero, febrero, marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre, diciembre
 
----
+———
 
-*⚠️ Reglas*
+⚠️ *Reglas*
 
 • NO modificar reportes viejos
 • NO cambiar URLs existentes
-• Siempre actualizar el index.html con el nuevo reporte
+• Siempre actualizar index.html con el nuevo reporte
 
----
+———
 
-*🔑 Acceso al repo*
+🔑 *Acceso al repo*
 
 Pásenme su usuario de GitHub para agregarlos como colaboradores.
+https://github.com/AgustinParraquini/nuvemchat-report-nov2025
 
-Repo: https://github.com/AgustinParraquini/nuvemchat-report-nov2025
-
----
+———
 
 Dudas? Me avisan 🙌
-
