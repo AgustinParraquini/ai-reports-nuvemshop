@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Hands - AI Businesses | Octubre 2025</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Space Grotesk', sans-serif; background: linear-gradient(135deg, #0a0a1a 0%, #1a1033 50%, #0a0a1a 100%); min-height: 100vh; }
+        
+        /* Auth styles */
+        #root { display: none; }
+        body.authenticated #root { display: block; }
+        body.authenticated #auth-overlay { display: none !important; }
+        body.authenticated #auth-loading { display: none !important; }
+        body.auth-ready #auth-loading { display: none !important; }
+        
+        #auth-loading {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1033 50%, #0a0a1a 100%);
+            z-index: 999999; display: flex; align-items: center; justify-content: center; flex-direction: column;
+        }
+        #auth-loading .spinner {
+            width: 50px; height: 50px; border: 3px solid #2d3748;
+            border-top-color: #8B5CF6; border-radius: 50%; animation: authspin 1s linear infinite;
+        }
+        #auth-loading p { color: #6B7280; margin-top: 16px; font-size: 14px; }
+        @keyframes authspin { to { transform: rotate(360deg); } }
+        
+        #auth-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1033 50%, #0a0a1a 100%);
+            z-index: 99999; display: none; align-items: center; justify-content: center;
+        }
+        .auth-box { text-align: center; max-width: 400px; padding: 40px; }
+        .auth-box h1 { color: #fff; font-size: 28px; margin-bottom: 8px; }
+        .auth-box p { color: #9CA3AF; margin-bottom: 32px; }
+        .google-btn {
+            width: 100%; padding: 14px 24px; background: #fff; border: none;
+            border-radius: 12px; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; gap: 12px; font-size: 15px; font-weight: 600; color: #333;
+            transition: transform 0.2s;
+        }
+        .google-btn:hover { transform: scale(1.02); }
+        .auth-note { color: #6B7280; font-size: 12px; margin-top: 16px; }
+        .auth-note b { color: #8B5CF6; }
+        #login-error { display: none; margin-top: 24px; padding: 16px; background: rgba(236,63,65,.1); border-radius: 8px; border: 1px solid #EC3F41; color: #EC3F41; font-size: 14px; }
+        
+        /* Navigation */
+        .report-nav { position: fixed; top: 20px; left: 20px; z-index: 9990; }
+        .report-nav-btn {
+            width: 48px; height: 48px; background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 14px;
+            color: #fff; font-size: 20px; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+        .report-nav-btn:hover { background: rgba(139, 92, 246, 0.4); transform: scale(1.05); }
+        .report-nav-menu {
+            position: absolute; top: 56px; left: 0; background: rgba(26, 16, 51, 0.95);
+            border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 16px;
+            min-width: 260px; padding: 12px; display: none;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5); backdrop-filter: blur(20px);
+        }
+        .report-nav-menu.open { display: block; }
+        .report-nav-section {
+            padding: 10px 14px 6px; font-size: 10px; font-weight: 700;
+            color: #8B5CF6; text-transform: uppercase; letter-spacing: 2px;
+        }
+        .report-nav-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+            border-radius: 10px; color: #9CA3AF; text-decoration: none;
+            font-size: 14px; transition: all 0.2s;
+        }
+        .report-nav-item:hover { background: rgba(139, 92, 246, 0.2); color: #fff; }
+        .report-nav-item.active { background: rgba(139, 92, 246, 0.3); color: #8B5CF6; }
+        .report-nav-item.home { border-bottom: 1px solid rgba(139, 92, 246, 0.2); margin-bottom: 8px; padding-bottom: 14px; }
+        
+        /* Slide styles */
+        .wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .s {
+            width: 100%; max-width: 1200px; min-height: 680px;
+            background: rgba(255,255,255,0.98); border-radius: 24px;
+            padding: 40px 50px; display: flex; flex-direction: column;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+        }
+        .s.dk {
+            background: linear-gradient(135deg, #1a1033 0%, #0a0a1a 100%);
+            color: #fff; border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+        .s.purple {
+            background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 50%, #4F46E5 100%);
+            color: #fff;
+        }
+        .s.chat { border-top: 4px solid #59A9FF; }
+        .s.lumi { border-top: 4px solid #8B5CF6; }
+        .s.retos { border-top: 4px solid #F59E0B; }
+        
+        .hd { margin-bottom: 24px; }
+        .t {
+            display: inline-block; padding: 6px 14px; border-radius: 8px;
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 2px; margin-bottom: 10px;
+        }
+        .t.blue { background: linear-gradient(135deg, #59A9FF, #0050C3); color: #fff; }
+        .t.purple { background: linear-gradient(135deg, #8B5CF6, #6366F1); color: #fff; }
+        .t.green { background: linear-gradient(135deg, #10B981, #059669); color: #fff; }
+        .t.red { background: linear-gradient(135deg, #EF4444, #DC2626); color: #fff; }
+        .t.orange { background: linear-gradient(135deg, #F59E0B, #D97706); color: #fff; }
+        .t.dark { background: #1a1033; color: #fff; }
+        
+        h1 { font-size: 32px; font-weight: 800; color: #1a1033; line-height: 1.2; }
+        .dk h1, .purple h1 { color: #fff; }
+        h2 { font-size: 14px; color: #6B7280; font-weight: 400; margin-top: 4px; }
+        .dk h2 { color: #9CA3AF; }
+        h3 { font-size: 14px; font-weight: 700; margin-bottom: 8px; color: #1a1033; }
+        
+        .ct { flex: 1; }
+        
+        /* Grid layouts */
+        .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        .g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+        .g5 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 12px; }
+        
+        /* Metrics */
+        .m { background: #f8f9fa; border-radius: 16px; padding: 20px; }
+        .m.blue { background: linear-gradient(135deg, #59A9FF 0%, #0050C3 100%); color: #fff; }
+        .m.purple { background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); color: #fff; }
+        .m.green { background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: #fff; }
+        .m.red { background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); color: #fff; }
+        .m.orange { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); color: #fff; }
+        .m.dark { background: #1a1033; color: #fff; }
+        .m.glass { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
+        
+        .ml { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; margin-bottom: 4px; }
+        .mv { font-size: 32px; font-weight: 800; line-height: 1; }
+        .ms { font-size: 11px; opacity: 0.85; margin-top: 6px; }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #1a1033; color: #fff; padding: 12px 14px; text-align: left; font-weight: 600; }
+        th:first-child { border-radius: 10px 0 0 0; }
+        th:last-child { border-radius: 0 10px 0 0; }
+        td { padding: 12px 14px; border-bottom: 1px solid #e5e7eb; }
+        tr:hover { background: #f9fafb; }
+        .gd { color: #10B981; font-weight: 700; }
+        .bd { color: #EF4444; font-weight: 700; }
+        .wr { color: #F59E0B; font-weight: 700; }
+        .bl { color: #59A9FF; font-weight: 700; }
+        .pr { color: #8B5CF6; font-weight: 700; }
+        
+        /* Boxes */
+        .bx { background: #f8f9fa; border-radius: 12px; padding: 16px; margin: 8px 0; font-size: 13px; }
+        .bx.blue { background: #eff6ff; border-left: 4px solid #59A9FF; }
+        .bx.purple { background: #f5f3ff; border-left: 4px solid #8B5CF6; }
+        .bx.green { background: #ecfdf5; border-left: 4px solid #10B981; }
+        .bx.red { background: #fef2f2; border-left: 4px solid #EF4444; }
+        .bx.orange { background: #fffbeb; border-left: 4px solid #F59E0B; }
+        .bx.dark { background: #1a1033; color: #fff; border-left: none; }
+        
+        /* Funnel */
+        .funnel { display: flex; align-items: center; gap: 8px; margin: 16px 0; }
+        .funnel-step {
+            flex: 1; background: #f8f9fa; border-radius: 12px; padding: 16px;
+            text-align: center; position: relative;
+        }
+        .funnel-step.active { background: linear-gradient(135deg, #8B5CF6, #6366F1); color: #fff; }
+        .funnel-arrow { font-size: 20px; color: #8B5CF6; }
+        
+        /* Charts */
+        .chrt { background: #fff; border-radius: 12px; padding: 16px; height: 200px; border: 1px solid #e5e7eb; }
+        
+        /* Navigation */
+        .nav {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 12px; align-items: center;
+            background: rgba(255,255,255,0.95); padding: 12px 24px;
+            border-radius: 50px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+        .btn {
+            background: #1a1033; color: #fff; border: none;
+            width: 44px; height: 44px; border-radius: 50%;
+            cursor: pointer; font-size: 18px; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn:hover:not(:disabled) { background: #8B5CF6; transform: scale(1.1); }
+        .btn:disabled { background: #d1d5db; cursor: not-allowed; }
+        .ind { font-weight: 700; font-size: 14px; min-width: 80px; text-align: center; color: #1a1033; }
+        
+        /* Utilities */
+        ul { padding-left: 20px; font-size: 13px; }
+        li { margin-bottom: 6px; line-height: 1.5; }
+        .sm { font-size: 12px; }
+        .xs { font-size: 10px; }
+        .mt { margin-top: 12px; }
+        .mb { margin-bottom: 12px; }
+        .ctr { text-align: center; }
+        .flag { font-size: 24px; }
+        
+        /* Section dividers */
+        .section-badge {
+            position: absolute; top: 20px; right: 20px;
+            padding: 6px 12px; border-radius: 20px;
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .section-badge.chat { background: rgba(89, 169, 255, 0.2); color: #59A9FF; }
+        .section-badge.lumi { background: rgba(139, 92, 246, 0.2); color: #8B5CF6; }
+        .section-badge.retos { background: rgba(245, 158, 11, 0.2); color: #F59E0B; }
+        
+        /* Reto card */
+        .reto-card {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 16px; padding: 20px; margin: 8px 0;
+        }
+        .reto-card h4 { color: #F59E0B; font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+        .reto-card .target { 
+            display: inline-block; background: #F59E0B; color: #fff;
+            padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+<!-- Loading -->
+<div id="auth-loading"><div class="spinner"></div><p>Verificando acceso...</p></div>
+
+<!-- Auth Overlay -->
+<div id="auth-overlay">
+    <div class="auth-box">
+        <div style="font-size:72px;margin-bottom:24px">🚀</div>
+        <h1>All Hands Report</h1>
+        <p>AI Businesses • Octubre 2025</p>
+        <button class="google-btn" id="google-login-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Iniciar sesión con Google
+        </button>
+        <p class="auth-note">Solo emails <b>@tiendanube.com</b> y <b>@nuvemshop.com</b></p>
+        <div id="login-error"></div>
+    </div>
+</div>
+
+<!-- Firebase Auth -->
+<script>
+const firebaseConfig={apiKey:"AIzaSyBhrC9gzxfJrf-8_r0X3KpF8_PW0MgB3Gg",authDomain:"reports-ai-b02e8.firebaseapp.com",projectId:"reports-ai-b02e8"};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const googleProvider=new firebase.auth.GoogleAuthProvider();
+const ALLOWED_DOMAINS=['tiendanube.com','nuvemshop.com'];
+
+auth.onAuthStateChanged((user)=>{
+    document.body.classList.add('auth-ready');
+    document.getElementById('auth-loading').style.display='none';
+    if(user){
+        const domain=user.email.split('@')[1];
+        if(ALLOWED_DOMAINS.includes(domain)){
+            document.body.classList.add('authenticated');
+            document.getElementById('auth-overlay').style.display='none';
+        }else{
+            auth.signOut();
+            document.getElementById('login-error').textContent='🚫 '+user.email+' no tiene acceso';
+            document.getElementById('login-error').style.display='block';
+            document.getElementById('auth-overlay').style.display='flex';
+        }
+    }else{
+        document.body.classList.remove('authenticated');
+        document.getElementById('auth-overlay').style.display='flex';
+    }
+});
+document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('google-login-btn').onclick=()=>{
+        auth.signInWithPopup(googleProvider).catch(err=>{
+            if(err.code!=='auth/popup-closed-by-user'){
+                document.getElementById('login-error').textContent='Error: '+err.message;
+                document.getElementById('login-error').style.display='block';
+            }
+        });
+    };
+});
+</script>
+
+<!-- Navigation Menu -->
+<div class="report-nav" id="report-nav" style="display:none">
+    <button class="report-nav-btn" onclick="toggleReportMenu()" title="Ver otros reportes">📊</button>
+    <div class="report-nav-menu" id="report-nav-menu">
+        <a href="../../index.html" class="report-nav-item home"><span>🏠</span> Hub Principal</a>
+        <div class="report-nav-section">🚀 All Hands</div>
+        <a href="octubre.html" class="report-nav-item active"><span>📄</span> Octubre 2025</a>
+        <div class="report-nav-section">💬 Nuvem Chat</div>
+        <a href="../../chat/2025/noviembre.html" class="report-nav-item"><span>📄</span> Noviembre 2025</a>
+        <a href="../../q4-2025.html" class="report-nav-item"><span>📄</span> Q4 2025</a>
+        <div class="report-nav-section">✨ Lumi</div>
+        <div class="report-nav-item" style="color:#4B5563;cursor:default"><span>📄</span> Próximamente...</div>
+    </div>
+</div>
+<script>
+function toggleReportMenu(){document.getElementById('report-nav-menu').classList.toggle('open');}
+document.addEventListener('click',(e)=>{if(!e.target.closest('.report-nav'))document.getElementById('report-nav-menu').classList.remove('open');});
+const chk=setInterval(()=>{if(document.body.classList.contains('authenticated')){document.getElementById('report-nav').style.display='block';clearInterval(chk);}},100);
+</script>
+
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef}=React;
+
+// ============================================
+// DATA - OCTUBRE 2025
+// ============================================
+const DATA = {
+    month: "Octubre 2025",
+    chat: {
+        // Funnel General
+        eligibleBase: 38042,
+        installations: { total: 5857, pct: 15.4 },
+        trialStarts: { total: 5452, pct: 14.3 },
+        paymentsHistoricos: 1045,
+        accumulatedChurn: { total: 373, pct: 35 },
+        currentPayments: { total: 672, growth: "+19% MoM" },
+        // Por país
+        byCountry: {
+            AR: { payments: 312, growth: "+19%" },
+            BR: { payments: 299, growth: "+23%" },
+            MX: { payments: 40, growth: "+17%" },
+            CO: { payments: 18, growth: "-14%" },
+            CL: { payments: 3, growth: "0%" }
+        },
+        // Por Plan
+        byPlan: {
+            enterprise: { 
+                eligible: 592, install: 48, trials: 307, trialPct: 52,
+                payments: 87, churn: 41, churnPct: 32, arpu: 40, aiChatsPct: 38,
+                adoption: 8, growth: "+5%"
+            },
+            planC: {
+                eligible: 1518, install: 33, trials: 489, trialPct: 32,
+                payments: 103, churn: 37, churnPct: 26, arpu: 26, aiChatsPct: 26,
+                adoption: 3, growth: "+9.5%"
+            },
+            planB: {
+                eligible: 6670, install: 20, trials: 1612, trialPct: 24,
+                payments: 232, churn: 128, churnPct: 35, arpu: 14, aiChatsPct: 24,
+                adoption: 2, growth: "+15%"
+            },
+            planA: {
+                eligible: 18569, install: 14, trials: 2546, trialPct: 13,
+                payments: 245, churn: 141, churnPct: 36, arpu: 8, aiChatsPct: 12,
+                adoption: 1, growth: "+19%"
+            },
+            freemium: {
+                eligible: 10693, install: 20, trials: 498, trialPct: 4,
+                payments: 4, churn: 5, churnPct: 55, growth: "+100%"
+            }
+        },
+        // Churn
+        churn: {
+            monthly: 10,
+            subscriberChurn: 17,
+            lessThan100Convs: 81,
+            alsoChurnedStore: 20
+        },
+        // Revenue & GMV
+        revenue: {
+            direct: 12100,
+            indirect: 3400,
+            total: 15500,
+            takeRate: 3.85,
+            gmv: 90000,
+            arpu: 18,
+            runRate: 134000
+        },
+        // MAUs
+        maus: {
+            total: 2000,
+            subscribers: 672,
+            newSubscribers: 135,
+            newSubscribersGrowth: "+24%",
+            trialsGrowth: "+30%"
+        },
+        aiChats: {
+            total: 150000,
+            automated: 60,
+            humanIntervention: 50
+        }
+    },
+    lumi: {
+        name: "Lumi",
+        tagline: "Your business rhythm, amplified by AI",
+        agents: ["Writer", "Designer", "Sales Assistant", "Business Advisor"],
+        features: {
+            products: "Product descriptions",
+            categories: "Category management",
+            images: "Image generation",
+            assistant: "Conversational AI"
+        },
+        roadmap: {
+            q4: ["Lumi Conversational V1-V4", "AI Credit Consumption", "Lumi Studio POC", "AI Evals"],
+            later: ["CRM Integration", "Chat App", "Conversational Onboarding"]
+        }
+    },
+    // RETOS / CHALLENGES
+    retos: {
+        chat: [
+            {
+                title: "Reducir Churn Acumulado",
+                current: "35%",
+                target: "<20%",
+                description: "81% de churns tienen <100 conversaciones. Falta configuración correcta.",
+                actions: ["Mejorar onboarding", "Alertas de inactividad", "Early warning system"]
+            },
+            {
+                title: "Aumentar Adoption Rate",
+                current: "~2%",
+                target: ">5%",
+                description: "Conversión de instalaciones a trials muy baja en planes SMB.",
+                actions: ["Product tour optimizado", "Trial experience mejorada", "Communications lifecycle"]
+            },
+            {
+                title: "Escalar GMV",
+                current: "$90K",
+                target: "$150K",
+                description: "Seller Agent en rollout. Argentina lidera con 64% del GMV.",
+                actions: ["Expandir Seller Agent", "One-click payments", "Carritos optimizados"]
+            },
+            {
+                title: "Revenue Recovery",
+                current: "$12.1K",
+                target: "$15K",
+                description: "Cobrar facturas pendientes y retener high-value merchants.",
+                actions: ["Campañas de billing", "WhatsApp follow-ups", "Retention offers"]
+            }
+        ],
+        lumi: [
+            {
+                title: "Lanzar Lumi Assistant",
+                current: "In Progress",
+                target: "GA Q4",
+                description: "Asistente conversacional integrado en el admin.",
+                actions: ["V1 ready", "V2 navigation", "V3 multimodal", "V4 history"]
+            },
+            {
+                title: "Lumi Studio POC",
+                current: "Testing",
+                target: "Beta Q4",
+                description: "Generación de imágenes de productos con AI.",
+                actions: ["Product photography", "AI Models", "Banner generation"]
+            },
+            {
+                title: "Unificar experiencia AI",
+                current: "Fragmentado",
+                target: "Unificado",
+                description: "Integrar Pilot, Chat, Jarvis bajo Lumi umbrella.",
+                actions: ["Branding unificado", "Credits centralizados", "UX consistente"]
+            }
+        ],
+        kpis: {
+            chat: [
+                { name: "Logo Churn", current: "10%", target: "<5%" },
+                { name: "Revenue", current: "$12.1K", target: ">$15K" },
+                { name: "GMV Chat", current: "$90K", target: ">$150K" },
+                { name: "ARPU", current: "$18", target: ">$22" },
+                { name: "Adoption", current: "2%", target: ">5%" }
+            ],
+            lumi: [
+                { name: "AI Uses", current: "TBD", target: "Track" },
+                { name: "Upsells", current: "TBD", target: "Track" },
+                { name: "User Engagement", current: "TBD", target: "Track" }
+            ]
+        }
+    }
+};
+
+// ============================================
+// CHART COMPONENT
+// ============================================
+function Chart({labels, data, colors, title, type="bar"}) {
+    const ref = useRef(null);
+    const inst = useRef(null);
+    
+    useEffect(() => {
+        if (inst.current) inst.current.destroy();
+        const c = Array.isArray(colors) ? colors : Array(data.length).fill(colors);
+        inst.current = new window.Chart(ref.current.getContext('2d'), {
+            type,
+            data: { labels, datasets: [{ data, backgroundColor: c, borderRadius: 6 }] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { title: { display: !!title, text: title, font: { size: 12, weight: 600 } }, legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } }
+            }
+        });
+        return () => { if (inst.current) inst.current.destroy(); };
+    }, []);
+    
+    return <canvas ref={ref}></canvas>;
+}
+
+// ============================================
+// SLIDES
+// ============================================
+
+// S01 - Cover
+function S01() {
+    return (
+        <div className="s dk ctr" style={{justifyContent:"center"}}>
+            <div style={{fontSize:14, color:"#8B5CF6", letterSpacing:4, marginBottom:16}}>AI BUSINESSES</div>
+            <h1 style={{fontSize:56, marginBottom:12, background:"linear-gradient(135deg, #fff 0%, #8B5CF6 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent"}}>All Hands</h1>
+            <h2 style={{fontSize:18, marginBottom:40, color:"#9CA3AF"}}>Octubre 2025</h2>
+            <div className="g4" style={{maxWidth:900, margin:"0 auto"}}>
+                <div className="m blue">
+                    <div className="ml">💬 Chat Payments</div>
+                    <div className="mv">672</div>
+                    <div className="ms">+19% MoM</div>
+                </div>
+                <div className="m green">
+                    <div className="ml">💰 Revenue</div>
+                    <div className="mv">$12.1K</div>
+                    <div className="ms">Directo</div>
+                </div>
+                <div className="m purple">
+                    <div className="ml">✨ GMV Chat</div>
+                    <div className="mv">$90K</div>
+                    <div className="ms">Ventas cerradas</div>
+                </div>
+                <div className="m orange">
+                    <div className="ml">⚠️ Churn</div>
+                    <div className="mv">35%</div>
+                    <div className="ms">Acumulado</div>
+                </div>
+            </div>
+            <div style={{marginTop:40, display:"flex", gap:24, justifyContent:"center"}}>
+                <span style={{padding:"8px 16px", background:"rgba(89,169,255,0.2)", borderRadius:20, fontSize:12, color:"#59A9FF"}}>💬 Nuvem Chat</span>
+                <span style={{padding:"8px 16px", background:"rgba(139,92,246,0.2)", borderRadius:20, fontSize:12, color:"#8B5CF6"}}>✨ Lumi</span>
+                <span style={{padding:"8px 16px", background:"rgba(245,158,11,0.2)", borderRadius:20, fontSize:12, color:"#F59E0B"}}>🎯 Retos</span>
+            </div>
+        </div>
+    );
+}
+
+// S02 - Agenda
+function S02() {
+    return (
+        <div className="s">
+            <div className="hd">
+                <span className="t dark">📋 Agenda</span>
+                <h1>Contenido del All Hands</h1>
+            </div>
+            <div className="ct">
+                <div className="g3">
+                    <div className="bx blue" style={{padding:24}}>
+                        <h3 style={{color:"#59A9FF", fontSize:16}}>💬 Nuvem Chat</h3>
+                        <ul className="mt">
+                            <li>Full Funnel Overview</li>
+                            <li>Funnel por Plan</li>
+                            <li>Churn Analysis</li>
+                            <li>Revenue & GMV</li>
+                            <li>Product Updates</li>
+                        </ul>
+                    </div>
+                    <div className="bx purple" style={{padding:24}}>
+                        <h3 style={{color:"#8B5CF6", fontSize:16}}>✨ Lumi</h3>
+                        <ul className="mt">
+                            <li>Value Proposition</li>
+                            <li>Agents Overview</li>
+                            <li>Core Metrics</li>
+                            <li>Product Updates</li>
+                            <li>Roadmap Q4</li>
+                        </ul>
+                    </div>
+                    <div className="bx orange" style={{padding:24}}>
+                        <h3 style={{color:"#F59E0B", fontSize:16}}>🎯 Retos</h3>
+                        <ul className="mt">
+                            <li>Challenges por Producto</li>
+                            <li>KPIs y Targets</li>
+                            <li>Action Items</li>
+                            <li>Timeline Q4</li>
+                            <li>Ownership</li>
+                        </ul>
+                    </div>
+                </div>
+                <div className="bx dark mt" style={{padding:20}}>
+                    <div className="g3 ctr">
+                        <div>
+                            <div className="xs" style={{opacity:0.7}}>SLIDES CHAT</div>
+                            <div style={{fontSize:28, fontWeight:800, color:"#59A9FF"}}>15</div>
+                        </div>
+                        <div>
+                            <div className="xs" style={{opacity:0.7}}>SLIDES LUMI</div>
+                            <div style={{fontSize:28, fontWeight:800, color:"#8B5CF6"}}>8</div>
+                        </div>
+                        <div>
+                            <div className="xs" style={{opacity:0.7}}>SLIDES RETOS</div>
+                            <div style={{fontSize:28, fontWeight:800, color:"#F59E0B"}}>10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// S03 - Chat Section Intro
+function S03() {
+    return (
+        <div className="s dk chat ctr" style={{justifyContent:"center"}}>
+            <div style={{fontSize:80, marginBottom:24}}>💬</div>
+            <h1 style={{fontSize:48}}>Nuvem Chat</h1>
+            <h2 style={{fontSize:16, marginTop:12}}>AI Conversacional para WhatsApp</h2>
+            <div className="g4 mt" style={{maxWidth:800, margin:"32px auto 0"}}>
+                <div className="m glass">
+                    <div className="ml">Payments</div>
+                    <div className="mv">672</div>
+                </div>
+                <div className="m glass">
+                    <div className="ml">Revenue</div>
+                    <div className="mv">$12.1K</div>
+                </div>
+                <div className="m glass">
+                    <div className="ml">GMV</div>
+                    <div className="mv">$90K</div>
+                </div>
+                <div className="m glass">
+                    <div className="ml">ARPU</div>
+                    <div className="mv">$18</div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// S04 - Full Funnel
+function S04() {
+    const d = DATA.chat;
+    return (
+        <div className="s chat">
+            <div className="hd">
+                <span className="t blue">💬 Chat</span>
+                <h1>Full Funnel</h1>
+                <h2>Conversión de base elegible a pagos activos</h2>
+            </div>
+            <div className="ct">
+                <div className="funnel">
+                    <div className="funnel-step">
+                        <div className="xs" style={{color:"#6B7280"}}>ELIGIBLE BASE</div>
+                        <div style={{fontSize:28, fontWeight:800}}>{d.eligibleBase.toLocaleString()}</div>
+                        <div className="xs">100% Tiendanube</div>
+                    </div>
+                    <div className="funnel-arrow">→</div>
+                    <div className="funnel-step">
+                        <div className="xs" style={{color:"#6B7280"}}>INSTALLATIONS</div>
+                        <div style={{fontSize:28, fontWeight:800}}>5,857</div>
+                        <div className="xs">(15.4%)</div>
+                    </div>
+                    <div className="funnel-arrow">→</div>
+                    <div className="funnel-step">
+                        <div className="xs" style={{color:"#6B7280"}}>TRIAL STARTS</div>
+                        <div style={{fontSize:28, fontWeight:800}}>{d.trialStarts.total.toLocaleString()}</div>
+                        <div className="xs">(14.3%)</div>
+                    </div>
+                    <div className="funnel-arrow">→</div>
+                    <div className="funnel-step active">
+                        <div className="xs">CURRENT PAYMENTS</div>
+                        <div style={{fontSize:28, fontWeight:800}}>{d.currentPayments.total}</div>
+                        <div className="xs">{d.currentPayments.growth}</div>
+                    </div>
+                </div>
+                
+                <div className="g2 mt">
+                    <div className="bx">
+                        <h3>📊 Payments por País</h3>
+                        <div className="g5 mt">
+                            <div className="ctr"><span className="flag">🇦🇷</span><div style={{fontWeight:700}}>{d.byCountry.AR.payments}</div><div className="xs gd">{d.byCountry.AR.growth}</div></div>
+                            <div className="ctr"><span className="flag">🇧🇷</span><div style={{fontWeight:700}}>{d.byCountry.BR.payments}</div><div className="xs gd">{d.byCountry.BR.growth}</div></div>
+                            <div className="ctr"><span className="flag">🇲🇽</span><div style={{fontWeight:700}}>{d.byCountry.MX.payments}</div><div className="xs gd">{d.byCountry.MX.growth}</div></div>
+                            <div className="ctr"><span className="flag">🇨🇴</span><div style={{fontWeight:700}}>{d.byCountry.CO.payments}</div><div className="xs bd">{d.byCountry.CO.growth}</div></div>
+                            <div className="ctr"><span className="flag">🇨🇱</span><div style={{fontWeight:700}}>{d.byCountry.CL.payments}</div><div className="xs">{d.byCountry.CL.growth}</div></div>
+                        </div>
+                    </div>
+                    <div className="bx red">
+                        <h3 style={{color:"#EF4444"}}>⚠️ Churn Acumulado</h3>
+                        <div className="g2 mt">
+                            <div><div style={{fontSize:32, fontWeight:800}}>{d.accumulatedChurn.total}</div><div className="xs">merchants churneados</div></div>
+                            <div><div style={{fontSize:32, fontWeight:800, color:"#EF4444"}}>{d.accumulatedChurn.pct}%</div><div className="xs">de payments históricos</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// S05 - Funnel por Plan - Enterprise & Plan C
+function S05() {
+    const e = DATA.chat.byPlan.enterprise;
+    const c = DATA.chat.byPlan.planC;
+    return (
+        <div className="s chat">
+            <div className="hd">
+                <span className="t blue">💬 Chat</span>
+                <h1>Funnel por Plan: Premium</h1>
+                <h2>Enterprise (Next/Evolución) y Plan C (Escala)</h2>
+            </div>
+            <div className="ct">
+                <div className="g2">
+                    <div className="bx" style={{padding:20}}>
+                        <h3 style={{color:"#8B5CF6"}}>🏢 Enterprise (Next)</h3>
+                        <div className="g2 mt">
+                            <div className="m purple">
+                                <div className="ml">Payments</div>
+                                <div className="mv">{e.payments}</div>
+                                <div className="ms">{e.growth} MoM</div>
+                            </div>
+                            <div className="m">
+                                <div className="ml">ARPU</div>
+                                <div className="mv">${e.arpu}</div>
+                                <div className="ms">{e.aiChatsPct}% AI Chats</div>
+                            </div>
+                        </div>
+                        <table className="mt">
+                            <tbody>
+                                <tr><td>Eligible Base</td><td style={{textAlign:"right"}}>{e.eligible.toLocaleString()}</td></tr>
+                                <tr><td>Installations</td><td style={{textAlign:"right"}}>{e.install}%</td></tr>
+                                <tr><td>Trial Starts</td><td style={{textAlign:"right"}}>{e.trials} ({e.trialPct}%)</td></tr>
+                                <tr><td>Churn</td><td style={{textAlign:"right"}} className="bd">{e.churn} ({e.churnPct}%)</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="bx green mt"><b>Adoption: {e.adoption}%</b> - Best conversion</div>
+                    </div>
+                    <div className="bx" style={{padding:20}}>
+                        <h3 style={{color:"#10B981"}}>📈 Plan C (Escala)</h3>
+                        <div className="g2 mt">
+                            <div className="m green">
+                                <div className="ml">Payments</div>
+                                <div className="mv">{c.payments}</div>
+                                <div className="ms">{c.growth} MoM</div>
+                            </div>
+                            <div className="m">
+                                <div className="ml">ARPU</div>
+                                <div className="mv">${c.arpu}</div>
+                                <div className="ms">{c.aiChatsPct}% AI Chats</div>
+                            </div>
+                        </div>
+                        <table className="mt">
+                            <tbody>
+                                <tr><td>Eligible Base</td><td style={{textAlign:"right"}}>{c.eligible.toLocaleString()}</td></tr>
+                                <tr><td>Installations</td><td style={{textAlign:"right"}}>{c.install}%</td></tr>
+                                <tr><td>Trial Starts</td><td style={{textAlign:"right"}}>{c.trials} ({c.trialPct}%)</td></tr>
+                                <tr><td>Churn</td><td style={{textAlign:"right"}} className="wr">{c.churn} ({c.churnPct}%)</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="bx blue mt"><b>Adoption: {c.adoption}%</b> - Growing fast</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// S06 - Funnel por Plan - Plan B & A
+function S06() {
+    const b = DATA.chat.byPlan.planB;
+    const a = DATA.chat.byPlan.planA;
+    return (
+        <div className="s chat">
+            <div className="hd">
+                <span className="t blue">💬 Chat</span>
+                <h1>Funnel por Plan: SMB</h1>
+                <h2>Plan B y Plan A (Emprendedor)</h2>
+            </div>
+            <div className="ct">
+                <div className="g2">
+                    <div className="bx" style={{padding:20}}>
+                        <h3 style={{color:"#59A9FF"}}>📦 Plan B</h3>
+                        <div className="g2 mt">
+                            <div className="m blue">
+                                <div className="ml">Payments</div>
+                                <div className="mv">{b.payments}</div>
+                                <div className="ms">{b.growth} MoM</div>
+                            </div>
+                            <div className="m">
+                                <div className="ml">ARPU</div>
+                                <div className="mv">${b.arpu}</div>
+                                <div className="ms">{b.aiChatsPct}% AI Chats</div>
+                            </div>
+                        </div>
+                        <table className="mt">
+                            <tbody>
+                                <tr><td>Eligible Base</td><td style={{textAlign:"right"}}>{b.eligible.toLocaleString()}</td></tr>
+                                <tr><td>Installations</td><td style={{textAlign:"right"}}>{b.install}%</td></tr>
+                                <tr><td>Trial Starts</td><td style={{textAlign:"right"}}>{b.trials.toLocaleString()} ({b.trialPct}%)</td></tr>
+                                <tr><td>Churn</td><td style={{textAlign:"right"}} className="bd">{b.churn} ({b.churnPct}%)</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="bx orange mt"><b>Adoption: {b.adoption}%</b> - High churn rate</div>
+                    </div>
+                    <div className="bx" style={{padding:20}}>
+                        <h3 style={{color:"#F59E0B"}}>🚀 Plan A (Emprendedor)</h3>
+                        <div className="g2 mt">
+                            <div className="m orange">
+                                <div className="ml">Payments</div>
+                                <div className="mv">{a.payments}</div>
+                                <div className="ms">{a.growth} MoM</div>
+                            </div>
+                            <div className="m">
+                                <div className="ml">ARPU</div>
+                                <div className="mv">${a.arpu}</div>
+                                <div className="ms">{a.aiChatsPct}% AI Chats</div>
+                            </div>
+                        </div>
+                        <table className="mt">
+                            <tbody>
+                                <tr><td>Eligible Base</td><td style={{textAlign:"right"}}>{a.eligible.toLocaleString()}</td></tr>
+                                <tr><td>Installations</td><td style={{textAlign:"right"}}>{a.install}%</td></tr>
+                                <tr><td>Trial Starts</td><td style={{textAlign:"right"}}>{a.trials.toLocaleString()} ({a.trialPct}%)</td></tr>
+                                <tr><td>Churn</td><td style={{textAlign:"right"}} className="bd">{a.churn} ({a.churnPct}%)</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="bx red mt"><b>Adoption: {a.adoption}%</b> - Highest churn (36%)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// S07 - Churn Analysis
+function S07() {
+    const ch = DATA.chat.churn;
+    return (
+        <div className="s chat">
+            <div className="hd">
+                <span className="t red">⚠️ Churn</span>
+                <h1>Análisis de Churn</h1>
+                <h2>Octubre 2025</h2>
+            </div>
+            <div className="ct">
+                <div className="g4">
+                    <div className="m red">
+                        <div className="ml">Churn Mensual</div>
+                        <div className="mv">{ch.monthly}%</div>
+                    </div>
+                    <div className="m orange">
+                        <div className="ml">Subscriber Churn</div>
+                        <div className="mv">{ch.subscriberChurn}%</div>
+                    </div>
+                    <div className="m dark">
+                        <div className="ml">{"<"}100 Convs</div>
+                        <div className="mv">{ch.lessThan100Convs}%</div>
+                        <div className="ms">de churns</div>
+                    </div>
+                    <div className="m">
+                        <div className="ml">Churned Store</div>
+                        <div className="mv">~{ch.alsoChurnedStore}%</div>
+                        <div className="ms">también churn NS</div>
+                    </div>
+                </div>
+                
+                <div className="g2 mt">
+                    <div className="bx red" style={{padding:20}}>
+                        <h3 style={{color:"#EF4444"}}>🔴 Root Cause</h3>
+                        <p className="mt">81% of churns have less than 100 AI conversations per month.</p>
+                        <p className="mt sm">Most customers who churn have few conversations. This is linked to their <b>inability to configure it correctly</b>, and after the first poor responses, they decide to turn it off.</p>
+                    </div>
+                    <div className="bx blue" style={{padding:20}}>
+                        <h3 style={{color:"#59A9FF"}}>💡 Insights</h3>
+                        <ul className="mt">
+                            <li><b>Medium sellers</b> are most of the churns</li>
+                            <li>~20% also churned from Nuvemshop entirely</li>
+                            <li>Poor first experience = quick churn</li>
+                            <li>Need better onboarding & configuration</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div className="chrt mt" style={{height:180}}>
+                    <Chart 
+                        labels={['Enterprise', 'Plan C', 'Plan B', 'Plan A', 'Freemium']}
+                        data={[32, 26, 35, 36, 55]}
+                        colors={['#8B5CF6', '#10B981', '#59A9FF', '#F59E0B', '#EF4444']}
+                        title="Churn Rate por Plan (%)"
+                    />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// S08 - Revenue & GMV
+function S08() {
+    const r = DATA.chat.revenue;
+    return (
+        <div className="s chat">
+            <div className="hd">
+                <span className="t green">💰 Revenue</span>
+                <h1>Revenue & GMV</h1>
+                <h2>Octubre 2025</h2>
+            </div>
+            <div className="ct">
+                <div className="g3">
+                    <div className="m green">
+                        <div className="ml">Revenue Directo</div>
+                        <div className="mv">${(r.direct/1000).toFixed(1)}K</div>
+                        <div className="ms">P&L Impact</div>
+                    </div>
+                    <div className="m blue">
+                        <div className="ml">Revenue Indirecto</div>
+                        <div className="mv">${(r.indirect/1000).toFixed(1)}K</div>
+                        <div className="ms">GMV contribution</div>
+                    </div>
+                    <div className="m purple">
+                        <div className="ml">Total Impact</div>
+                        <div className="mv">${(r.total/1000).toFixed(1)}K</div>
+                        <div className="ms">Run rate: ${(r.runRate/1000)}K</div>
+                    </div>
+                </div>
+                
+                <div className="g2 mt">
+                    <div className="bx" style={{padding:20}}>
+                        <h3>📊 Métricas Clave</h3>
+                        <table className="mt">
+                            <tbody>
+                                <tr><td>GMV Chat</td><td style={{textAlign:"right"}}><b className="pr">${r.gmv.toLocaleString()}</b></td></tr>
+                                <tr><td># Clientes</td><td style={{textAlign:"right"}}><b>672</b></td></tr>
+                                <tr><td>ARPU</td><td style={{textAlign:"right"}}><b className="gd">${r.arpu}</b></td></tr>
+                                <tr><td>Gross Take Rate</td><td style={{textAlign:"right"}}><b>{r.takeRate}%</b></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="bx green" style={{padding:20}}>
+                        <h3 style={{color:"#10B981"}}>🎯 GMV Chat por País</h3>
+                        <p className="mt sm">Full rollout of Chat generated Carts drove Chat GMV to <b>$90K total</b>.</p>
+                        <div className="g2 mt">
+                            <div className="ctr">
+                                <span className="flag">🇦🇷</span>
+                                <div style={{fontWeight:700, color:"#10B981"}}>64%</div>
+                                <div className="xs">Argentina lidera</div>
+                            </div>
+                            <div className="ctr">
+                                <span className="flag">🇧🇷</span>
+                                <div style={{fontWeight:700}}>~30%</div>
+                                <div className="xs">Brasil segundo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="bx dark mt" style={{padding:16}}>
+                    <div className="g3 ctr">
+                        <div>
+                            <div className="xs" style={{opacity:0.7}}>RUN RATE ANUAL</div>
+                            <div style={{fontSize:24, fontWeight:800, color:"#10B981"}}>${(r.runRate/1000)}K</div>
+                        </div>
+                        <div>
+                            <div className="xs" style={{opacity:0.7}}>vs ENERO</div>
+                            <div style={{fontSize:24, fontWeight:800, color:"#8B5CF6"}}>4X</div>
+                        </div>
+                        <div>
+                            <div className="xs" style={{opacity:0.7}}>% NS REVENUE</div>
+                            <div style={{fontSize:24, fontWeight:800, color:"#59A9FF"}}>0.1%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// S09 - MAUs & AI Chats
+function S09() {
+    const m = DATA.chat.maus;
+    const ai = DATA.chat.aiChats;
+    return (
+        <div className="s chat">
+            <div className="hd">
+                <span className="t blue">📈 Usage</span>
+                <h1>MAUs & AI Chats</h1>
+                <h2>Octubre 2025</h2>
+            </div>
+            <div className="ct">
+                <div className="g4">
+                    <div className="m blue">
+                        <div className="ml">MAUs Total</div>
+                        <div className="mv">~{(m.total/1000).toFixed(0)}K</div>
+                        <div className="ms">+28% MoM</div>
+                    </div>
+                    <div className="m green">
+                        <div className="ml">New Subscribers</div>
+                        <div className="mv">{m.newSubscribers}</div>
+                        <div className="ms">{m.newSubscribersGrowth}</div>
+                    </div>
+                    <div className="m purple">
+                        <div className="ml">Trials Growth</div>
+                        <div className="mv">{m.trialsGrowth}</div>
+                    </div>
+                    <div className="m dark">
+                        <div className="ml">Automated</div>
+                        <div className="mv">{ai.automated}%</div>
+                        <div className="ms">Full AI</div>
+                    </div>
+                </div>
+                
+                <div className="g2 mt">
+                    <div className="chrt" style={{height:200}}>
+                        <Chart 
+                            labels={['Aug', 'Sep', 'Oct']}
+                            data={[1200, 1600, 2000]}
+                            colors="#59A9FF"
+                            title="MAUs Evolution"
+                        />
+                    </div>
+                    <div className="bx blue" style={{padding:20}}>
+                        <h3 style={{color:"#59A9FF"}}>💡 Highlights</h3>
+                        <ul className="mt">
+                            <li>MAUs growth by <b>28%</b>, approaching 2K mark</li>
+                            <li><b>135 new subscribers</b> (+24%)</li>
+                            <li>Strong <b>30% growth in Trials</b></li>
+                            <li>First time <b>50% human intervention</b> - shift to hybrid model</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div className="bx orange mt">
+                    <h3 style={{color:"#F59E0B"}}>⚠️ AI Chats declining slightly since August</h3>
+                    <p className="sm">Total AI Chats continued to decline, but automation rate improved.</p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// S10 - Product Updates Chat
+function S10() {
+    return (
+        <div className="s chat">
+            <div className="hd">
+                <span className="t blue">🚀 Product</span>
+                <h1>Product Updates - Chat</h1>
+                <h2>Octubre 2025</h2>
+            </div>
+            <div className="ct">
+                <div className="g2">
+                    <div className="bx green" style={{padding:16}}>
+                        <h3 style={{color:"#10B981"}}>✅ Real Time Feedback</h3>
+                        <p className="sm mt">Merchants can rate bot responses with thumbs up/down to improve AI performance.</p>
+                    </div>
+                    <div className="bx blue" style={{padding:16}}>
+                        <h3 style={{color:"#59A9FF"}}>🔔 Meta Account Issues</h3>
+                        <p className="sm mt">Alert merchants about Meta account issues and guide them to resolve it.</p>
+                    </div>
+                    <div className="bx purple" style={{padding:16}}>
+                        <h3 style={{color:"#8B5CF6"}}>⚡ GPT 4.1 Upgrade</h3>
+                        <p className="sm mt">Upgraded from GPT 4.1 Mini to GPT 4.1 for all agents (GA).</p>
+                    </div>
+                    <div className="bx" style={{padding:16}}>
+                        <h3>🛠️ Billing Settings</h3>
+                        <p className="sm mt">Enable Ops to manage billing actions in Chat Panel.</p>
+                    </div>
+                </div>
+                
+                <div className="bx dark mt" style={{padding:20}}>
+                    <h3 style={{color:"#fff"}}>📋 Other Improvements</h3>
+                    <div className="g3 mt">
+                        <div>
+                            <div className="xs" style={{opacity:0.7}}>PROMOTIONAL PRICES</div>
+                            <p className="sm" style={{color:"#9CA3AF"}}>Fix for promotional pricing issues</p>
+                        </div>
+                        <div>
+                            <div className="xs" style={{opacity:0.7}}>CALL TO HUMAN</div>
+                            <p className="sm" style={{color:"#9CA3AF"}}>Improved escalation decisions</p>
+                        </div>
+                        <div>
+                            <div className="xs" style={{opacity:0.7}}>ROUTER PARTITION</div>
+                            <p className="sm" style={{color:"#9CA3AF"}}>New agent for routing decisions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// S11 - Lumi Section Intro
+function S11() {
+    return (
+        <div className="s purple ctr" style={{justifyContent:"center"}}>
+            <div style={{fontSize:80, marginBottom:24}}>✨</div>
+            <h1 style={{fontSize:48}}>Lumi</h1>
+            <h2 style={{fontSize:16, marginTop:12, color:"rgba(255,255,255,0.8)"}}>Your business rhythm, amplified by AI</h2>
+            <div style={{marginTop:32, display:"flex", gap:16, justifyContent:"center", flexWrap:"wrap"}}>
+                <span style={{padding:"10px 20px", background:"rgba(255,255,255,0.2)", borderRadius:12, fontSize:14}}>✍️ Writer</span>
+                <span style={{padding:"10px 20px", background:"rgba(255,255,255,0.2)", borderRadius:12, fontSize:14}}>🎨 Designer</span>
+                <span style={{padding:"10px 20px", background:"rgba(255,255,255,0.2)", borderRadius:12, fontSize:14}}>💬 Assistant</span>
+                <span style={{padding:"10px 20px", background:"rgba(255,255,255,0.2)", borderRadius:12, fontSize:14}}>📊 Advisor</span>
+            </div>
+        </div>
+    );
+}
+
+// S12 - Lumi Value Proposition
+function S12() {
+    return (
+        <div className="s lumi">
+            <div className="hd">
+                <span className="t purple">✨ Lumi</span>
+                <h1>Value Proposition</h1>
+                <h2>Un ecosistema de agentes AI especializados</h2>
+            </div>
+            <div className="ct">
+                <div className="bx purple" style={{padding:20}}>
+                    <p>Lumi is Nuvemshop's AI ecosystem. A team of intelligent, specialized agents that collaborate to simplify and accelerate daily store management.</p>
+                    <p className="mt"><b>These aren't simple helpers.</b> They play a specialized role (writer, designer, sales expert, or business advisor) actively contributing to business growth.</p>
+                </div>
+                
+                <div className="g4 mt">
+                    <div className="bx ctr" style={{padding:20}}>
+                        <div style={{fontSize:40}}>✍️</div>
+                        <h3 className="mt">Lumi Writer</h3>
+                        <p className="sm">Product descriptions, categories, SEO</p>
+                    </div>
+                    <div className="bx ctr" style={{padding:20}}>
+                        <div style={{fontSize:40}}>🎨</div>
+                        <h3 className="mt">Lumi Designer</h3>
+                        <p className="sm">Image generation, photo studio</p>
+                    </div>
+                    <div className="bx ctr" style={{padding:20}}>
+                        <div style={{fontSize:40}}>💬</div>
+                        <h3 className="mt">Lumi Assistant</h3>
+                        <p className="sm">Conversational AI, navigation</p>
+                    </div>
+                    <div className="bx ctr" style={{padding:20}}>
+                        <div style={{fontSize:40}}>📊</div>
+                        <h3 className="mt">Lumi Advisor</h3>
+                        <p className="sm">Business insights, recommendations</p>
+                    </div>
+                </div>
+                
+                <div className="bx dark mt">
+                    <div className="g2">
+                        <div>
+                            <h3 style={{color:"#8B5CF6"}}>Inspired by Real Teams</h3>
+                            <p className="sm" style={{color:"#9CA3AF"}}>Like a merchant hires professionals: copywriter, designer, sales expert...</p>
+                        </div>
+                        <div>
+                            <h3 style={{color:"#8B5CF6"}}>An Orchestrated Experience</h3>
+                            <p className="sm" style={{color:"#9CA3AF"}}>Each AI agent is deeply integrated, collaborating seamlessly.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// S13 - Lumi Roadmap
+function S13() {
+    return (
+        <div className="s lumi">
+            <div className="hd">
+                <span className="t purple">✨ Lumi</span>
+                <h1>Roadmap Q4 2025</h1>
+            </div>
+            <div className="ct">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Priority</th>
+                            <th>Feature</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><b>1</b></td>
+                            <td>Lumi Conversational V1</td>
+                            <td className="sm">First version with catalog form access</td>
+                            <td className="gd">Ready</td>
+                        </tr>
+                        <tr>
+                            <td><b>2</b></td>
+                            <td>Lumi Conversational V2</td>
+                            <td className="sm">Navigation across new admin</td>
+                            <td className="bl">Launch 17/11</td>
+                        </tr>
+                        <tr>
+                            <td><b>3</b></td>
+                            <td>Lumi Conversational V3</td>
+                            <td className="sm">Multi-modality (images & audio)</td>
+                            <td className="wr">Starts 17/11</td>
+                        </tr>
+                        <tr>
+                            <td><b>4</b></td>
+                            <td>Lumi Conversational V4</td>
+                            <td className="sm">Conversation history & persistence</td>
+                            <td>Not started</td>
+                        </tr>
+                        <tr>
+                            <td><b>5</b></td>
+                            <td>AI Credits Indicator</td>
+                            <td className="sm">Display AI usage in real time</td>
+                            <td className="gd">Rolling out</td>
+                        </tr>
+                        <tr>
+                            <td><b>6</b></td>
+                            <td>AI Evals</td>
+                            <td className="sm">Evaluation pipelines for agents</td>
+                            <td className="pr">In progress</td>
+                        </tr>
+                        <tr>
+                            <td><b>7</b></td>
+                            <td>Lumi Studio</td>
+                            <td className="sm">Image generative AI tools</td>
+                            <td className="wr">Testing POC</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
+
+// S14 - Retos Section Intro
+function S14() {
+    return (
+        <div className="s dk retos ctr" style={{justifyContent:"center", background:"linear-gradient(135deg, #78350f 0%, #451a03 100%)"}}>
+            <div style={{fontSize:80, marginBottom:24}}>🎯</div>
+            <h1 style={{fontSize:48}}>Retos</h1>
+            <h2 style={{fontSize:16, marginTop:12, color:"rgba(255,255,255,0.8)"}}>Challenges & Action Items</h2>
+            <div style={{marginTop:32, display:"flex", gap:16, justifyContent:"center"}}>
+                <span style={{padding:"10px 20px", background:"rgba(255,255,255,0.2)", borderRadius:12, fontSize:14}}>💬 Chat Challenges</span>
+                <span style={{padding:"10px 20px", background:"rgba(255,255,255,0.2)", borderRadius:12, fontSize:14}}>✨ Lumi Challenges</span>
+                <span style={{padding:"10px 20px", background:"rgba(255,255,255,0.2)", borderRadius:12, fontSize:14}}>📊 KPIs</span>
+            </div>
+        </div>
+    );
+}
+
+// S15 - Retos Chat
+function S15() {
+    const retos = DATA.retos.chat;
+    return (
+        <div className="s retos">
+            <div className="hd">
+                <span className="t orange">🎯 Retos</span>
+                <h1>Challenges - Nuvem Chat</h1>
+            </div>
+            <div className="ct">
+                <div className="g2">
+                    {retos.map((r, i) => (
+                        <div key={i} className="reto-card">
+                            <h4>#{i+1} {r.title}</h4>
+                            <div className="g2">
+                                <div><span className="xs">ACTUAL:</span> <b className="bd">{r.current}</b></div>
+                                <div><span className="xs">TARGET:</span> <b className="gd">{r.target}</b></div>
+                            </div>
+                            <p className="sm mt">{r.description}</p>
+                            <div className="mt">
+                                {r.actions.map((a, j) => (
+                                    <span key={j} className="target" style={{marginRight:6, marginBottom:6, display:"inline-block"}}>{a}</span>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// S16 - Retos Lumi
+function S16() {
+    const retos = DATA.retos.lumi;
+    return (
+        <div className="s retos">
+            <div className="hd">
+                <span className="t orange">🎯 Retos</span>
+                <h1>Challenges - Lumi</h1>
+            </div>
+            <div className="ct">
+                <div className="g3">
+                    {retos.map((r, i) => (
+                        <div key={i} className="reto-card">
+                            <h4>#{i+1} {r.title}</h4>
+                            <div className="g2">
+                                <div><span className="xs">ACTUAL:</span> <b className="wr">{r.current}</b></div>
+                                <div><span className="xs">TARGET:</span> <b className="gd">{r.target}</b></div>
+                            </div>
+                            <p className="sm mt">{r.description}</p>
+                            <div className="mt">
+                                {r.actions.map((a, j) => (
+                                    <span key={j} className="target" style={{marginRight:6, marginBottom:6, display:"inline-block", background:"#8B5CF6"}}>{a}</span>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// S17 - KPIs Dashboard
+function S17() {
+    const kpis = DATA.retos.kpis;
+    return (
+        <div className="s retos">
+            <div className="hd">
+                <span className="t orange">📊 KPIs</span>
+                <h1>KPIs & Targets</h1>
+                <h2>Noviembre 2025</h2>
+            </div>
+            <div className="ct">
+                <div className="g2">
+                    <div>
+                        <h3 style={{color:"#59A9FF", marginBottom:12}}>💬 Nuvem Chat KPIs</h3>
+                        <table>
+                            <thead>
+                                <tr><th>KPI</th><th>Actual</th><th>Target</th></tr>
+                            </thead>
+                            <tbody>
+                                {kpis.chat.map((k, i) => (
+                                    <tr key={i}>
+                                        <td><b>{k.name}</b></td>
+                                        <td className="wr">{k.current}</td>
+                                        <td className="gd">{k.target}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <h3 style={{color:"#8B5CF6", marginBottom:12}}>✨ Lumi KPIs</h3>
+                        <table>
+                            <thead>
+                                <tr><th>KPI</th><th>Actual</th><th>Target</th></tr>
+                            </thead>
+                            <tbody>
+                                {kpis.lumi.map((k, i) => (
+                                    <tr key={i}>
+                                        <td><b>{k.name}</b></td>
+                                        <td>{k.current}</td>
+                                        <td className="gd">{k.target}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        <div className="bx purple mt">
+                            <p className="sm">Lumi metrics tracking comenzará con el GA de Lumi Assistant.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// S18 - Action Items
+function S18() {
+    return (
+        <div className="s retos">
+            <div className="hd">
+                <span className="t orange">✅ Actions</span>
+                <h1>Action Items</h1>
+                <h2>Próximas 4 semanas</h2>
+            </div>
+            <div className="ct">
+                <div className="g3">
+                    <div className="bx red" style={{padding:20}}>
+                        <h3 style={{color:"#EF4444"}}>🚨 URGENTE (Semana 1)</h3>
+                        <ul className="mt">
+                            <li>Cobrar facturas pendientes</li>
+                            <li>Follow-up WhatsApp a churned</li>
+                            <li>Fix issues críticos de configuración</li>
+                        </ul>
+                    </div>
+                    <div className="bx orange" style={{padding:20}}>
+                        <h3 style={{color:"#F59E0B"}}>⚠️ IMPORTANTE (Semana 2)</h3>
+                        <ul className="mt">
+                            <li>Mejorar onboarding flow</li>
+                            <li>Implementar alertas de inactividad</li>
+                            <li>Launch Lumi V2</li>
+                        </ul>
+                    </div>
+                    <div className="bx green" style={{padding:20}}>
+                        <h3 style={{color:"#10B981"}}>🎯 GROWTH (Semana 3-4)</h3>
+                        <ul className="mt">
+                            <li>Escalar Seller Agent</li>
+                            <li>Launch Lumi V3</li>
+                            <li>Upselling campaigns</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div className="bx dark mt" style={{padding:20}}>
+                    <h3 style={{color:"#fff"}}>👥 Ownership</h3>
+                    <div className="g4 mt">
+                        <div className="ctr">
+                            <div className="xs" style={{opacity:0.7}}>CHAT CHURN</div>
+                            <div style={{color:"#59A9FF"}}>Product + Growth</div>
+                        </div>
+                        <div className="ctr">
+                            <div className="xs" style={{opacity:0.7}}>BILLING</div>
+                            <div style={{color:"#10B981"}}>Ops + Finance</div>
+                        </div>
+                        <div className="ctr">
+                            <div className="xs" style={{opacity:0.7}}>LUMI LAUNCH</div>
+                            <div style={{color:"#8B5CF6"}}>Product + Eng</div>
+                        </div>
+                        <div className="ctr">
+                            <div className="xs" style={{opacity:0.7}}>SELLER AGENT</div>
+                            <div style={{color:"#F59E0B"}}>Product + Sales</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// S19 - Closing
+function S19() {
+    return (
+        <div className="s dk ctr" style={{justifyContent:"center"}}>
+            <div style={{fontSize:14, color:"#8B5CF6", letterSpacing:4, marginBottom:16}}>AI BUSINESSES</div>
+            <h1 style={{fontSize:48, marginBottom:24}}>Gracias 🚀</h1>
+            <h2 style={{fontSize:16, color:"#9CA3AF", marginBottom:40}}>All Hands • Octubre 2025</h2>
+            
+            <div className="g3" style={{maxWidth:600, margin:"0 auto"}}>
+                <div className="m glass ctr">
+                    <div className="ml">CHAT</div>
+                    <div className="mv" style={{color:"#59A9FF"}}>672</div>
+                    <div className="ms">payments</div>
+                </div>
+                <div className="m glass ctr">
+                    <div className="ml">REVENUE</div>
+                    <div className="mv" style={{color:"#10B981"}}>$12.1K</div>
+                    <div className="ms">directo</div>
+                </div>
+                <div className="m glass ctr">
+                    <div className="ml">RETO #1</div>
+                    <div className="mv" style={{color:"#F59E0B"}}>Churn</div>
+                    <div className="ms">35% → {"<"}20%</div>
+                </div>
+            </div>
+            
+            <p style={{marginTop:40, fontSize:12, color:"#6B7280"}}>
+                💬 Chat: +19% MoM • ✨ Lumi: V1 Ready • 🎯 Focus: Retention & Launch
+            </p>
+        </div>
+    );
+}
+
+// ============================================
+// APP
+// ============================================
+function App() {
+    const [i, setI] = useState(0);
+    const SLIDES = [S01, S02, S03, S04, S05, S06, S07, S08, S09, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19];
+    
+    const next = () => i < SLIDES.length - 1 && setI(i + 1);
+    const prev = () => i > 0 && setI(i - 1);
+    
+    useEffect(() => {
+        const h = e => {
+            if (e.key === "ArrowRight") next();
+            if (e.key === "ArrowLeft") prev();
+        };
+        window.addEventListener("keydown", h);
+        return () => window.removeEventListener("keydown", h);
+    });
+    
+    const Slide = SLIDES[i];
+    
+    return (
+        <div>
+            <div className="wrap"><Slide /></div>
+            <div className="nav">
+                <button className="btn" onClick={prev} disabled={i === 0}>‹</button>
+                <span className="ind">{i + 1} / {SLIDES.length}</span>
+                <button className="btn" onClick={next} disabled={i === SLIDES.length - 1}>›</button>
+            </div>
+        </div>
+    );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+
+<!-- Sistema de Comentarios Centralizado -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="/assets/comments-system.js"></script>
+<script>initCommentsSystem('all-hands-oct-2025', { theme: 'dark' });</script>
+</body>
+</html>
