@@ -2101,9 +2101,10 @@
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
-<!-- Sistema de Comentarios con Firebase -->
+<!-- Sistema de Comentarios con Firebase + Auth -->
 <script>
 // Configuración Firebase
 const firebaseConfig = {
@@ -2118,22 +2119,73 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
+const auth = firebase.auth();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+// Dominios permitidos
+const ALLOWED_DOMAINS = ['tiendanube.com', 'nuvemshop.com'];
 
 class SlideComments {
   constructor(options = {}) {
     this.presentationId = options.presentationId || 'nuvemchat-nov-2025';
-    this.userName = localStorage.getItem('commenter_name') || null;
+    this.userName = null;
+    this.userEmail = null;
+    this.userPhoto = null;
     this.userColor = this.getRandomColor();
     this.comments = {};
+    this.isAuthenticated = false;
     this.init();
   }
 
   init() {
     this.injectStyles();
     this.createUI();
+    this.setupAuth();
     this.loadComments();
     this.bindEvents();
-    if (!this.userName) this.askForName();
+  }
+  
+  setupAuth() {
+    // Escuchar cambios de autenticación
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        const email = user.email;
+        const domain = email.split('@')[1];
+        
+        if (ALLOWED_DOMAINS.includes(domain)) {
+          this.isAuthenticated = true;
+          this.userName = user.displayName || email.split('@')[0];
+          this.userEmail = email;
+          this.userPhoto = user.photoURL;
+          console.log('✅ Usuario autenticado:', this.userName, email);
+          this.updateAuthUI();
+        } else {
+          // Email no autorizado
+          console.log('❌ Dominio no autorizado:', domain);
+          auth.signOut();
+          this.showUnauthorizedModal(email);
+        }
+      } else {
+        this.isAuthenticated = false;
+        this.userName = null;
+        this.userEmail = null;
+        this.updateAuthUI();
+      }
+    });
+  }
+  
+  showUnauthorizedModal(email) {
+    const modal = document.createElement('div');
+    modal.className = 'name-modal';
+    modal.innerHTML = `
+      <div class="name-modal-content">
+        <h3>🚫 Acceso Restringido</h3>
+        <p style="color:#EC3F41;font-weight:600">${email}</p>
+        <p>Solo usuarios con email de <b>@tiendanube.com</b> o <b>@nuvemshop.com</b> pueden comentar.</p>
+        <button onclick="this.closest('.name-modal').remove()" style="background:#6B7280">Cerrar</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
   }
 
   getRandomColor() {
@@ -2205,6 +2257,7 @@ class SlideComments {
     panel.className = 'comments-panel';
     panel.innerHTML = `
       <div class="comments-panel-header"><h3>💬 Comentarios</h3><button class="comments-panel-close">&times;</button></div>
+      <div id="auth-status" style="padding:0 12px"></div>
       <div class="comments-filter">
         <button class="filter-tab active" data-filter="all">Todos</button>
         <button class="filter-tab" data-filter="slide">Este slide</button>
@@ -2217,6 +2270,9 @@ class SlideComments {
     `;
     document.body.appendChild(panel);
     this.panel = panel;
+    
+    // Actualizar UI de auth después de crear el panel
+    setTimeout(() => this.updateAuthUI(), 100);
 
     panel.querySelector('.comments-panel-close').onclick = () => this.togglePanel();
     panel.querySelector('#add-comment-btn').onclick = () => this.startAddingComment();
@@ -2236,26 +2292,67 @@ class SlideComments {
     setTimeout(() => { helpTip.style.transition = 'opacity 0.5s'; helpTip.style.opacity = '0'; setTimeout(() => helpTip.remove(), 500); }, 6000);
   }
 
-  askForName() {
-    const modal = document.createElement('div');
-    modal.className = 'name-modal';
-    modal.innerHTML = `
-      <div class="name-modal-content">
-        <h3>👋 ¡Hola!</h3>
-        <p>¿Cómo te llamas? Así sabremos quién deja cada comentario.</p>
-        <input type="text" placeholder="Tu nombre..." id="commenter-name-input" />
-        <button id="save-name-btn">Continuar</button>
-      </div>
-    `;
-    document.body.appendChild(modal);
-    const input = modal.querySelector('#commenter-name-input');
-    const btn = modal.querySelector('#save-name-btn');
-    btn.onclick = () => {
-      const name = input.value.trim();
-      if (name) { this.userName = name; localStorage.setItem('commenter_name', name); modal.remove(); }
-    };
-    input.addEventListener('keypress', (e) => { if (e.key === 'Enter') btn.click(); });
-    setTimeout(() => input.focus(), 100);
+  loginWithGoogle() {
+    auth.signInWithPopup(googleProvider)
+      .then((result) => {
+        console.log('🔐 Login exitoso');
+      })
+      .catch((error) => {
+        console.error('❌ Error en login:', error);
+        if (error.code !== 'auth/popup-closed-by-user') {
+          alert('Error al iniciar sesión: ' + error.message);
+        }
+      });
+  }
+  
+  logout() {
+    auth.signOut().then(() => {
+      console.log('👋 Sesión cerrada');
+    });
+  }
+  
+  updateAuthUI() {
+    const authContainer = document.getElementById('auth-status');
+    if (!authContainer) return;
+    
+    if (this.isAuthenticated) {
+      authContainer.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#ECFDF5;border-radius:8px;margin-bottom:8px">
+          ${this.userPhoto ? `<img src="${this.userPhoto}" style="width:24px;height:24px;border-radius:50%">` : `<div style="width:24px;height:24px;border-radius:50%;background:${this.userColor};display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:bold">${this.userName.charAt(0).toUpperCase()}</div>`}
+          <span style="font-size:12px;color:#00965E;font-weight:500">${this.userName}</span>
+          <button onclick="slideComments.logout()" style="margin-left:auto;background:none;border:none;color:#6B7280;font-size:11px;cursor:pointer">Salir</button>
+        </div>
+      `;
+    } else {
+      authContainer.innerHTML = `
+        <button onclick="slideComments.loginWithGoogle()" style="width:100%;padding:10px;background:#fff;border:2px solid #E5E7EB;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:500;margin-bottom:8px">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Iniciar sesión con Google
+        </button>
+        <p style="font-size:10px;color:#9CA3AF;text-align:center;margin:0">Solo @tiendanube.com / @nuvemshop.com</p>
+      `;
+    }
+  }
+  
+  requireAuth() {
+    if (!this.isAuthenticated) {
+      const modal = document.createElement('div');
+      modal.className = 'name-modal';
+      modal.innerHTML = `
+        <div class="name-modal-content">
+          <h3>🔐 Inicia sesión para comentar</h3>
+          <p>Solo usuarios de Tiendanube/Nuvemshop pueden dejar comentarios.</p>
+          <button onclick="slideComments.loginWithGoogle(); this.closest('.name-modal').remove();" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Iniciar sesión con Google
+          </button>
+          <button onclick="this.closest('.name-modal').remove()" style="margin-top:8px;background:#f3f4f6;color:#6B7280">Cancelar</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      return false;
+    }
+    return true;
   }
 
   togglePanel() { this.panel.classList.toggle('open'); }
@@ -2343,8 +2440,8 @@ class SlideComments {
   }
 
   addComment({ text, x, y, slide }) {
-    if (!this.userName) { this.askForName(); return; }
-    const comment = { id: Date.now().toString(), text, x, y, slide, author: this.userName, color: this.userColor, timestamp: new Date().toISOString(), resolved: false, replies: [] };
+    if (!this.requireAuth()) return;
+    const comment = { id: Date.now().toString(), text, x, y, slide, author: this.userName, email: this.userEmail, color: this.userColor, timestamp: new Date().toISOString(), resolved: false, replies: [] };
     const comments = this.comments[this.presentationId] || [];
     comments.push(comment);
     this.comments[this.presentationId] = comments;
@@ -2353,9 +2450,8 @@ class SlideComments {
 
   addReply(commentId, text) {
     console.log('📨 addReply llamado:', commentId, text);
-    if (!this.userName) { 
-      console.log('⚠️ No hay userName, pidiendo nombre');
-      this.askForName(); 
+    if (!this.requireAuth()) { 
+      console.log('⚠️ No autenticado');
       return; 
     }
     const comments = this.comments[this.presentationId] || [];
