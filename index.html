@@ -2500,8 +2500,13 @@ class SlideComments {
       cursor: pointer;
     `;
     marker.innerHTML = '💬';
-    marker.title = `${comment.author}: ${comment.text}`;
-    marker.onclick = () => marker.remove();
+    marker.title = `Click para ver el comentario de ${comment.author}`;
+    
+    // Al hacer click, abrir panel y mostrar el comentario específico
+    marker.onclick = () => {
+      this.openCommentInPanel(comment.id);
+      marker.remove();
+    };
     
     // Agregar animación
     if (!document.getElementById('marker-animation')) {
@@ -2512,18 +2517,48 @@ class SlideComments {
           0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(89,169,255,0.6); }
           50% { transform: scale(1.2); box-shadow: 0 4px 30px rgba(89,169,255,0.9); }
         }
+        .comment-item.highlighted {
+          background: #DBEAFE !important;
+          border-left-color: #2563EB !important;
+          animation: highlightPulse 2s ease-in-out;
+        }
+        @keyframes highlightPulse {
+          0%, 100% { box-shadow: none; }
+          50% { box-shadow: 0 0 20px rgba(89,169,255,0.5); }
+        }
       `;
       document.head.appendChild(style);
     }
     
     document.body.appendChild(marker);
     
-    // Eliminar después de 5 segundos
+    // Eliminar después de 8 segundos si no se clickea
     setTimeout(() => {
-      marker.style.transition = 'opacity 0.5s';
-      marker.style.opacity = '0';
-      setTimeout(() => marker.remove(), 500);
-    }, 5000);
+      if (document.body.contains(marker)) {
+        marker.style.transition = 'opacity 0.5s';
+        marker.style.opacity = '0';
+        setTimeout(() => marker.remove(), 500);
+      }
+    }, 8000);
+  }
+  
+  openCommentInPanel(commentId) {
+    // Abrir panel
+    this.panel.classList.add('open');
+    
+    // Esperar un poco para que el panel se abra
+    setTimeout(() => {
+      // Buscar el comentario en el panel
+      const commentEl = this.panel.querySelector(`[data-id="${commentId}"]`);
+      if (commentEl) {
+        // Scroll al comentario
+        commentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Resaltar el comentario
+        commentEl.classList.add('highlighted');
+        setTimeout(() => commentEl.classList.remove('highlighted'), 3000);
+      }
+    }, 300);
   }
 
   updateBadge() {
