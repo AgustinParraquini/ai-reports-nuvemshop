@@ -2353,16 +2353,25 @@ class SlideComments {
     }
     const comments = this.comments[this.presentationId] || [];
     const comment = comments.find(c => c.id === commentId);
+    console.log('🔍 Comentario encontrado:', comment);
+    
     if (comment) {
       console.log('✅ Agregando respuesta al comentario');
-      comment.replies = comment.replies || [];
-      comment.replies.push({ 
+      // Asegurar que replies existe como array
+      if (!comment.replies || !Array.isArray(comment.replies)) {
+        comment.replies = [];
+      }
+      
+      const newReply = { 
         id: Date.now().toString(), 
-        text, 
+        text: text, 
         author: this.userName, 
         color: this.userColor, 
         timestamp: new Date().toISOString() 
-      });
+      };
+      console.log('📝 Nueva respuesta:', newReply);
+      
+      comment.replies.push(newReply);
       this.saveComments();
       // Re-renderizar para mostrar la respuesta
       this.renderComments();
