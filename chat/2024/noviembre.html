@@ -1,0 +1,2946 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Noviembre 2025 - Nuvem Chat</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #010B23; min-height: 100vh; color: #1a1a2e; }
+        
+        /* BLOQUEO: Ocultar contenido hasta autenticación */
+        #root { display: none; }
+        body.authenticated #root { display: block; }
+        body.authenticated #auth-overlay { display: none !important; }
+        .container { width: 100vw; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 30px 20px; }
+        .slide { width: 100%; max-width: 1100px; min-height: 85vh; background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); padding: 40px 50px; display: flex; flex-direction: column; }
+        .slide.dark { background: #010B23; color: white; }
+        .header { margin-bottom: 20px; }
+        .tag { display: inline-block; background: #59A9FF; color: white; padding: 6px 14px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+        .tag.green { background: #00965E; }
+        .tag.red { background: #EC3F41; }
+        .tag.orange { background: #FF7A27; }
+        .tag.dark { background: #2C3357; }
+        h1 { font-size: 32px; font-weight: 700; color: #010B23; margin-bottom: 6px; line-height: 1.2; }
+        .dark h1 { color: white; }
+        h2 { font-size: 16px; color: #6B7280; font-weight: 400; }
+        .dark h2 { color: #9CA3AF; }
+        h3 { font-size: 15px; font-weight: 600; color: #010B23; margin-bottom: 8px; }
+        .content { flex: 1; }
+        .metrics { display: grid; gap: 16px; margin-bottom: 20px; }
+        .metrics-4 { grid-template-columns: repeat(4, 1fr); }
+        .metrics-3 { grid-template-columns: repeat(3, 1fr); }
+        .metrics-2 { grid-template-columns: repeat(2, 1fr); }
+        .metric { background: #F3F4F6; border-radius: 12px; padding: 20px; }
+        .metric.blue { background: linear-gradient(135deg, #59A9FF 0%, #0050C3 100%); color: white; }
+        .metric.green { background: linear-gradient(135deg, #00965E 0%, #00CD4B 100%); color: white; }
+        .metric.red { background: linear-gradient(135deg, #EC3F41 0%, #C3355D 100%); color: white; }
+        .metric.orange { background: linear-gradient(135deg, #FF7A27 0%, #EC3F41 100%); color: white; }
+        .metric.dark { background: #010B23; color: white; }
+        .metric-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 4px; }
+        .metric-value { font-size: 32px; font-weight: 700; line-height: 1.1; }
+        .metric-sub { font-size: 12px; opacity: 0.85; margin-top: 4px; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+        th { background: #010B23; color: white; padding: 12px 14px; text-align: left; font-weight: 600; }
+        th:first-child { border-radius: 8px 0 0 0; }
+        th:last-child { border-radius: 0 8px 0 0; }
+        td { padding: 12px 14px; border-bottom: 1px solid #E5E7EB; }
+        tr:hover { background: #F9FAFB; }
+        .good { color: #00965E; font-weight: 600; }
+        .bad { color: #EC3F41; font-weight: 600; }
+        .warn { color: #FF7A27; font-weight: 600; }
+        .box { background: #F3F4F6; border-radius: 12px; padding: 16px; margin: 10px 0; }
+        .box.blue { background: #EFF6FF; border-left: 4px solid #59A9FF; }
+        .box.green { background: #ECFDF5; border-left: 4px solid #00965E; }
+        .box.red { background: #FEF2F2; border-left: 4px solid #EC3F41; }
+        .box.orange { background: #FFF7ED; border-left: 4px solid #FF7A27; }
+        .nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; background: white; padding: 10px 20px; border-radius: 50px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .btn { background: #010B23; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .btn:hover:not(:disabled) { background: #59A9FF; }
+        .btn:disabled { background: #D1D5DB; cursor: not-allowed; }
+        .indicator { color: #010B23; font-weight: 600; font-size: 14px; min-width: 80px; text-align: center; }
+        .grid { display: grid; gap: 16px; }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .flow { display: flex; align-items: center; justify-content: space-between; margin: 20px 0; }
+        .flow-item { text-align: center; flex: 1; padding: 15px; background: #F3F4F6; border-radius: 12px; margin: 0 5px; }
+        .flow-arrow { color: #59A9FF; font-size: 24px; font-weight: bold; }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 6px; line-height: 1.5; }
+        .flag { font-size: 28px; margin-right: 10px; }
+        .country-header { display: flex; align-items: center; margin-bottom: 15px; }
+        .small { font-size: 12px; color: #6B7280; }
+    </style>
+</head>
+<body>
+    <!-- PANTALLA DE LOGIN - Se oculta cuando el usuario está autenticado -->
+    <div id="auth-overlay" style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #010B23 0%, #1a1f3a 50%, #010B23 100%);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    ">
+      <div style="text-align:center;max-width:400px;padding:40px">
+        <div style="font-size:64px;margin-bottom:24px">🔐</div>
+        <h1 style="color:white;font-size:28px;margin-bottom:8px;font-weight:700;font-family:Inter,sans-serif">Nuvem Chat Report</h1>
+        <p style="color:#9CA3AF;font-size:16px;margin-bottom:32px;font-family:Inter,sans-serif">Este reporte es exclusivo para el equipo de Tiendanube / Nuvemshop</p>
+        
+        <button id="google-login-btn" style="
+          width: 100%;
+          padding: 14px 24px;
+          background: white;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          font-size: 15px;
+          font-weight: 500;
+          color: #333;
+          font-family: Inter, sans-serif;
+        ">
+          <svg width="20" height="20" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Iniciar sesión con Google
+        </button>
+        
+        <p style="color:#6B7280;font-size:12px;margin-top:16px;font-family:Inter,sans-serif">
+          Solo emails <b style="color:#59A9FF">@tiendanube.com</b> y <b style="color:#59A9FF">@nuvemshop.com</b>
+        </p>
+        
+        <div id="login-error" style="display:none;margin-top:24px;padding:16px;background:rgba(236,63,65,0.1);border-radius:8px;border:1px solid #EC3F41">
+          <p style="color:#EC3F41;font-size:14px;margin:0;font-family:Inter,sans-serif">🚫 <span id="error-email"></span></p>
+          <p style="color:#9CA3AF;font-size:12px;margin:8px 0 0 0;font-family:Inter,sans-serif">Este email no tiene acceso al reporte</p>
+        </div>
+        
+        <div id="login-loading" style="display:none;margin-top:24px">
+          <div style="width:24px;height:24px;border:3px solid #59A9FF;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto"></div>
+          <p style="color:#9CA3AF;font-size:13px;margin-top:12px;font-family:Inter,sans-serif">Verificando acceso...</p>
+        </div>
+      </div>
+      
+      <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #google-login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,255,255,0.2); }
+      </style>
+    </div>
+    
+    <div id="root"></div>
+    <script type="text/babel">
+
+        const { useState, useEffect } = React;
+        
+        function App() {
+            const [slide, setSlide] = useState(0);
+            const slides = [
+                <S01/>,<S02/>,<S03/>,<S04/>,<S05/>,<S06/>,<S07/>,<S08/>,<S09/>,<S10/>,
+                <S11/>,<S12/>,<S13/>,<S14/>,<S15/>,<S16/>,<S17/>,<S18/>,<S19/>,<S20/>,
+                <S21/>,<S22/>,<S23/>,<S24/>,<S25/>,<S26/>,<S27/>,<S28/>,<S29/>,<S30/>,
+                <S31/>,<S32/>
+            ];
+            const next = () => slide < slides.length - 1 && setSlide(slide + 1);
+            const prev = () => slide > 0 && setSlide(slide - 1);
+            useEffect(() => {
+                const h = (e) => { if (e.key === "ArrowRight") next(); if (e.key === "ArrowLeft") prev(); };
+                window.addEventListener("keydown", h);
+                return () => window.removeEventListener("keydown", h);
+            });
+            return (<div><div className="container">{slides[slide]}</div><div className="nav"><button className="btn" onClick={prev} disabled={slide===0}>‹</button><span className="indicator">{slide+1} / {slides.length}</span><button className="btn" onClick={next} disabled={slide===slides.length-1}>›</button></div></div>);
+        }
+
+        // S01 - Portada
+        function S01() {
+            return (
+                <div className="slide dark" style={{justifyContent: "center", textAlign: "center"}}>
+                    <div>
+                        <div style={{fontSize: 14, color: "#59A9FF", marginBottom: 20, letterSpacing: 2}}>NUVEM CHAT</div>
+                        <h1 style={{fontSize: 52, marginBottom: 16}}>Reporte Noviembre 2025</h1>
+                        <h2 style={{fontSize: 18, marginBottom: 50}}>Analisis completo de metricas, churn y proyecciones</h2>
+                        <div className="metrics metrics-4" style={{maxWidth: 900, margin: "0 auto"}}>
+                            <div className="metric green"><div className="metric-label">Revenue</div><div className="metric-value">$8,094</div><div className="metric-sub">cobrado</div></div>
+                            <div className="metric blue"><div className="metric-label">New Payments</div><div className="metric-value">149</div><div className="metric-sub">+116% vs Oct</div></div>
+                            <div className="metric red"><div className="metric-label">Churn</div><div className="metric-value">21.1%</div><div className="metric-sub">155 merchants</div></div>
+                            <div className="metric orange"><div className="metric-label">Pendiente</div><div className="metric-value">$3,987</div><div className="metric-sub">560 merchants</div></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S02 - Que es Nuvem Chat
+        function S02() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag">Contexto</span>
+                        <h1>Que es Nuvem Chat?</h1>
+                    </div>
+                    <div className="content">
+                        <div className="box blue" style={{fontSize: 16, marginBottom: 20}}>
+                            <p><strong>Nuvem Chat</strong> es el producto de AI Conversacional de Tiendanube que permite a los merchants automatizar la atencion al cliente via WhatsApp usando Inteligencia Artificial.</p>
+                        </div>
+                        <div className="metrics metrics-2" style={{marginBottom: 20}}>
+                            <div className="box"><h3>Como funciona?</h3>
+                                <ul>
+                                    <li>El merchant conecta su WhatsApp</li>
+                                    <li>Configura respuestas y contenido</li>
+                                    <li>La IA responde automaticamente a clientes</li>
+                                    <li>Se cobra por conversaciones de AI</li>
+                                </ul>
+                            </div>
+                            <div className="box"><h3>Modelo de negocio</h3>
+                                <ul>
+                                    <li><strong>Free Trial:</strong> 7 dias gratis</li>
+                                    <li><strong>Facturacion:</strong> Por uso (conversaciones)</li>
+                                    <li><strong>Ciclo:</strong> Mensual</li>
+                                    <li><strong>Precio:</strong> Variable por plan y pais</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div className="box green">
+                            <h3 style={{color: "#00965E"}}>Metricas clave de este reporte</h3>
+                            <ul>
+                                <li><strong>AI Chats Facturados:</strong> Conversaciones cobradas en la factura (Invoice Count Conversation)</li>
+                                <li><strong>Chats en Trial:</strong> Conversaciones durante los 7 dias gratis (no se cobran)</li>
+                                <li><strong>Revenue:</strong> Lo que cobramos por el servicio (en USD)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S03 - Historia de Noviembre
+        function S03() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag">Contexto</span>
+                        <h1>La historia de Noviembre</h1>
+                        <h2>Que paso con los merchants de Octubre a Noviembre?</h2>
+                    </div>
+                    <div className="content">
+                        <div className="flow">
+                            <div className="flow-item"><div style={{fontSize: 11, color: "#6B7280"}}>Pagaron Oct</div><div style={{fontSize: 32, fontWeight: 700}}>736</div></div>
+                            <div className="flow-arrow">→</div>
+                            <div className="flow-item" style={{background: "#ECFDF5"}}><div style={{fontSize: 11}}>Tienen factura Nov</div><div style={{fontSize: 32, fontWeight: 700, color: "#00965E"}}>564</div></div>
+                            <div className="flow-arrow">→</div>
+                            <div className="flow-item" style={{background: "#FEF2F2"}}><div style={{fontSize: 11}}>Sin factura Nov</div><div style={{fontSize: 32, fontWeight: 700, color: "#EC3F41"}}>172</div></div>
+                        </div>
+                        <div className="grid grid-2" style={{marginTop: 20}}>
+                            <div className="box green"><h3 style={{color: "#00965E"}}>564 continuan (76.6%)</h3><p>Tienen factura de Noviembre generada (pagada o pendiente)</p></div>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>172 sin factura (23.4%)</h3><p>No tienen factura de Noviembre. De estos, 155 estan inactivos = CHURN REAL</p></div>
+                        </div>
+                        <div className="box orange" style={{marginTop: 15}}>
+                            <h3 style={{color: "#FF7A27"}}>Que paso con los 172 sin factura?</h3>
+                            <ul>
+                                <li><strong>155 inactivos:</strong> No usaron el chat en Nov/Dic → CHURN REAL</li>
+                                <li><strong>17 activos:</strong> Siguen usando pero sin factura → Posible problema de billing</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S04 - Resumen ejecutivo
+        function S04() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag green">Resumen Ejecutivo</span>
+                        <h1>Noviembre en numeros</h1>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-4">
+                            <div className="metric dark"><div className="metric-label">Merchants Pagados</div><div className="metric-value">564</div><div className="metric-sub">vs 736 Oct (-23%)</div></div>
+                            <div className="metric green"><div className="metric-label">Revenue Cobrado</div><div className="metric-value">$8,094</div><div className="metric-sub">vs $9,932 Oct (-18%)</div></div>
+                            <div className="metric blue"><div className="metric-label">AI Chats Facturados</div><div className="metric-value">76.8K</div><div className="metric-sub">vs 93K Oct (-17%)</div></div>
+                            <div className="metric orange"><div className="metric-label">Pendiente Cobrar</div><div className="metric-value">$3,987</div><div className="metric-sub">560 merchants</div></div>
+                        </div>
+                        <div className="box blue" style={{marginTop: 20}}>
+                            <h3 style={{color: "#59A9FF"}}>Sobre los AI Chats</h3>
+                            <p><strong>AI Chats Facturados (76.8K):</strong> Son las conversaciones que cobramos en la factura. Es la metrica de revenue.</p>
+                            <p style={{marginTop: 8}}><strong>Chats en Trial (71.5K):</strong> Conversaciones de usuarios en periodo de prueba. No se cobran pero indican potencial.</p>
+                            <p style={{marginTop: 8}}><strong>Total procesados:</strong> ~148K conversaciones de AI atendidas en Noviembre.</p>
+                        </div>
+                        <div className="box green" style={{marginTop: 10}}>
+                            <h3 style={{color: "#00965E"}}>Si cobramos los pendientes activos: $11,244 (+13% vs Oct)</h3>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S05 - Comparacion Oct vs Nov
+        function S05() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag dark">Comparacion</span>
+                        <h1>Octubre vs Noviembre</h1>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>Metrica</th><th>Octubre</th><th>Noviembre</th><th>Cambio</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>Merchants pagados</strong></td><td>736</td><td>564</td><td className="bad">-23.4%</td></tr>
+                                <tr><td><strong>Revenue cobrado</strong></td><td>$9,932</td><td>$8,094</td><td className="bad">-18.5%</td></tr>
+                                <tr><td><strong>AI Chats facturados</strong></td><td>93,046</td><td>76,795</td><td className="bad">-17.5%</td></tr>
+                                <tr><td><strong>Chats en trial</strong></td><td>75,626</td><td>71,508</td><td className="warn">-5.4%</td></tr>
+                                <tr><td><strong>ARPU</strong></td><td>$13.49</td><td>$14.35</td><td className="good">+6.4%</td></tr>
+                                <tr><td><strong>New payments</strong></td><td>69</td><td>149</td><td className="good">+116%</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 15}}>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>Lo malo</h3><p>Menos merchants, menos revenue, menos chats. Impacto del churn.</p></div>
+                            <div className="box green"><h3 style={{color: "#00965E"}}>Lo bueno</h3><p>ARPU creciendo (+6.4%) y +116% nuevos pagos. Mejor calidad.</p></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S06 - Paises overview
+        function S06() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag">Por Pais</span>
+                        <h1>Performance por Pais</h1>
+                        <h2>Noviembre - Solo merchants que pagaron</h2>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>Pais</th><th>Merchants</th><th>Revenue</th><th>ARPU</th><th>AI Chats</th><th>vs Oct</th></tr></thead>
+                            <tbody>
+                                <tr><td><span className="flag">🇧🇷</span><strong>Brasil</strong></td><td>257</td><td>$3,210</td><td>$12.49</td><td>28,331</td><td className="bad">-22% merch</td></tr>
+                                <tr><td><span className="flag">🇦🇷</span><strong>Argentina</strong></td><td>261</td><td>$4,475</td><td>$17.15</td><td>45,572</td><td className="bad">-25% merch</td></tr>
+                                <tr><td><span className="flag">🇲🇽</span><strong>Mexico</strong></td><td>29</td><td>$306</td><td>$10.56</td><td>2,250</td><td className="warn">-17% merch</td></tr>
+                                <tr><td><span className="flag">🇨🇴</span><strong>Colombia</strong></td><td>13</td><td>$87</td><td>$6.71</td><td>538</td><td className="bad">-41% merch</td></tr>
+                                <tr><td><span className="flag">🇨🇱</span><strong>Chile</strong></td><td>4</td><td>$16</td><td>$3.88</td><td>104</td><td className="good">+33% merch</td></tr>
+                            </tbody>
+                            <tfoot><tr style={{background: "#F3F4F6"}}><td><strong>TOTAL</strong></td><td><strong>564</strong></td><td><strong>$8,094</strong></td><td><strong>$14.35</strong></td><td><strong>76,795</strong></td><td></td></tr></tfoot>
+                        </table>
+                        <div className="box blue" style={{marginTop: 15}}>
+                            <h3 style={{color: "#59A9FF"}}>Insights clave</h3>
+                            <ul>
+                                <li><strong>Argentina:</strong> Mayor revenue ($4,475) y mejor ARPU ($17.15)</li>
+                                <li><strong>Brasil:</strong> Mas churn (-22%) pero sigue siendo el mercado mas grande</li>
+                                <li><strong>Colombia:</strong> Caida fuerte (-41%), revisar situacion</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S07 - Brasil
+        function S07() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <div className="country-header"><span className="flag" style={{fontSize: 40}}>🇧🇷</span><div><span className="tag">Por Pais</span><h1>Brasil</h1></div></div>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-4">
+                            <div className="metric dark"><div className="metric-label">Merchants Nov</div><div className="metric-value">257</div><div className="metric-sub">vs 330 Oct</div></div>
+                            <div className="metric green"><div className="metric-label">Revenue</div><div className="metric-value">$3,210</div><div className="metric-sub">vs $3,547 Oct</div></div>
+                            <div className="metric blue"><div className="metric-label">AI Chats</div><div className="metric-value">28.3K</div><div className="metric-sub">vs 31.8K Oct</div></div>
+                            <div className="metric red"><div className="metric-label">Churn</div><div className="metric-value">23.9%</div><div className="metric-sub">79 merchants</div></div>
+                        </div>
+                        <table style={{marginTop: 20}}>
+                            <thead><tr><th>Metrica</th><th>Octubre</th><th>Noviembre</th><th>Cambio</th></tr></thead>
+                            <tbody>
+                                <tr><td>Merchants pagados</td><td>330</td><td>257</td><td className="bad">-22.1%</td></tr>
+                                <tr><td>Revenue</td><td>$3,547</td><td>$3,210</td><td className="warn">-9.5%</td></tr>
+                                <tr><td>ARPU</td><td>$10.75</td><td>$12.49</td><td className="good">+16.2%</td></tr>
+                                <tr><td>AI Chats facturados</td><td>31,794</td><td>28,331</td><td className="warn">-10.9%</td></tr>
+                                <tr><td>Free Trial Starts (Amplitude)</td><td>807</td><td>632</td><td className="bad">-21.7%</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="box red" style={{marginTop: 12}}>
+                            <h3 style={{color: "#EC3F41"}}>Alerta: Caida de trials -21.7%</h3>
+                            <p>Brasil representa 56% de los trials. La caida impacta todo el funnel.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S08 - Argentina
+        function S08() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <div className="country-header"><span className="flag" style={{fontSize: 40}}>🇦🇷</span><div><span className="tag">Por Pais</span><h1>Argentina</h1></div></div>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-4">
+                            <div className="metric dark"><div className="metric-label">Merchants Nov</div><div className="metric-value">261</div><div className="metric-sub">vs 346 Oct</div></div>
+                            <div className="metric green"><div className="metric-label">Revenue</div><div className="metric-value">$4,475</div><div className="metric-sub">vs $5,737 Oct</div></div>
+                            <div className="metric blue"><div className="metric-label">AI Chats</div><div className="metric-value">45.6K</div><div className="metric-sub">vs 56.6K Oct</div></div>
+                            <div className="metric red"><div className="metric-label">Churn</div><div className="metric-value">22.5%</div><div className="metric-sub">78 merchants</div></div>
+                        </div>
+                        <table style={{marginTop: 20}}>
+                            <thead><tr><th>Metrica</th><th>Octubre</th><th>Noviembre</th><th>Cambio</th></tr></thead>
+                            <tbody>
+                                <tr><td>Merchants pagados</td><td>346</td><td>261</td><td className="bad">-24.6%</td></tr>
+                                <tr><td>Revenue</td><td>$5,737</td><td>$4,475</td><td className="bad">-22.0%</td></tr>
+                                <tr><td>ARPU</td><td>$16.58</td><td>$17.15</td><td className="good">+3.4%</td></tr>
+                                <tr><td>AI Chats facturados</td><td>56,567</td><td>45,572</td><td className="bad">-19.4%</td></tr>
+                                <tr><td>Free Trial Starts (Amplitude)</td><td>381</td><td>339</td><td className="warn">-11.0%</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="box green" style={{marginTop: 12}}>
+                            <h3 style={{color: "#00965E"}}>Mejor ARPU de la region: $17.15</h3>
+                            <p>Argentina tiene el revenue mas alto y mejor ARPU. Mercado premium.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S09 - Mexico
+        function S09() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <div className="country-header"><span className="flag" style={{fontSize: 40}}>🇲🇽</span><div><span className="tag">Por Pais</span><h1>Mexico</h1></div></div>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-4">
+                            <div className="metric dark"><div className="metric-label">Merchants Nov</div><div className="metric-value">29</div><div className="metric-sub">vs 35 Oct</div></div>
+                            <div className="metric green"><div className="metric-label">Revenue</div><div className="metric-value">$306</div><div className="metric-sub">vs $488 Oct</div></div>
+                            <div className="metric blue"><div className="metric-label">AI Chats</div><div className="metric-value">2.3K</div><div className="metric-sub">vs 3.6K Oct</div></div>
+                            <div className="metric red"><div className="metric-label">Churn</div><div className="metric-value">20.0%</div><div className="metric-sub">7 merchants</div></div>
+                        </div>
+                        <table style={{marginTop: 20}}>
+                            <thead><tr><th>Metrica</th><th>Octubre</th><th>Noviembre</th><th>Cambio</th></tr></thead>
+                            <tbody>
+                                <tr><td>Merchants pagados</td><td>35</td><td>29</td><td className="warn">-17.1%</td></tr>
+                                <tr><td>Revenue</td><td>$488</td><td>$306</td><td className="bad">-37.3%</td></tr>
+                                <tr><td>ARPU</td><td>$13.94</td><td>$10.56</td><td className="bad">-24.2%</td></tr>
+                                <tr><td>AI Chats facturados</td><td>3,589</td><td>2,250</td><td className="bad">-37.3%</td></tr>
+                                <tr><td>Free Trial Starts (Amplitude)</td><td>67</td><td>76</td><td className="good">+13.4%</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="box orange" style={{marginTop: 12}}>
+                            <h3 style={{color: "#FF7A27"}}>Trials creciendo +13.4%</h3>
+                            <p>Unico pais grande con trials en crecimiento. Oportunidad de expansion.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S10 - Colombia y Chile
+        function S10() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag">Por Pais</span>
+                        <h1>Colombia y Chile</h1>
+                    </div>
+                    <div className="content">
+                        <div className="grid grid-2">
+                            <div>
+                                <div className="country-header"><span className="flag" style={{fontSize: 32}}>🇨🇴</span><h3>Colombia</h3></div>
+                                <div className="box red">
+                                    <table style={{fontSize: 12}}>
+                                        <tbody>
+                                            <tr><td>Merchants</td><td>22 → 13</td><td className="bad">-41%</td></tr>
+                                            <tr><td>Revenue</td><td>$149 → $87</td><td className="bad">-42%</td></tr>
+                                            <tr><td>ARPU</td><td>$6.79 → $6.71</td><td className="warn">-1%</td></tr>
+                                            <tr><td>Churn</td><td colspan="2" className="bad">36.4% (8)</td></tr>
+                                        </tbody>
+                                    </table>
+                                    <p style={{marginTop: 10, fontSize: 12}}>Mayor churn rate de la region. ARPU mas bajo.</p>
+                                </div>
+                            </div>
+                            <div>
+                                <div className="country-header"><span className="flag" style={{fontSize: 32}}>🇨🇱</span><h3>Chile</h3></div>
+                                <div className="box green">
+                                    <table style={{fontSize: 12}}>
+                                        <tbody>
+                                            <tr><td>Merchants</td><td>3 → 4</td><td className="good">+33%</td></tr>
+                                            <tr><td>Revenue</td><td>$10 → $16</td><td className="good">+50%</td></tr>
+                                            <tr><td>ARPU</td><td>$3.49 → $3.88</td><td className="good">+11%</td></tr>
+                                            <tr><td>Churn</td><td colspan="2" className="good">0% (0)</td></tr>
+                                        </tbody>
+                                    </table>
+                                    <p style={{marginTop: 10, fontSize: 12}}>Creciendo pero base muy pequena. 0% churn.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="box orange" style={{marginTop: 20}}>
+                            <h3 style={{color: "#FF7A27"}}>Colombia necesita atencion</h3>
+                            <p>36.4% churn es el mas alto. Solo 13 merchants activos con ARPU bajo ($6.71). Revisar producto/pricing.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S11 - AI Chats explicacion
+        function S11() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag blue">AI Chats</span>
+                        <h1>Entendiendo los AI Chats</h1>
+                        <h2>Que son y como los medimos</h2>
+                    </div>
+                    <div className="content">
+                        <div className="box blue" style={{marginBottom: 20}}>
+                            <h3 style={{color: "#59A9FF"}}>Que es un AI Chat?</h3>
+                            <p>Es una conversacion entre un cliente del merchant y nuestra IA via WhatsApp. Cada vez que la IA responde automaticamente a un cliente, cuenta como AI Chat.</p>
+                        </div>
+                        <div className="metrics metrics-3">
+                            <div className="metric dark"><div className="metric-label">Chats Facturados</div><div className="metric-value">76.8K</div><div className="metric-sub">Lo que cobramos</div></div>
+                            <div className="metric"><div className="metric-label">Chats en Trial</div><div className="metric-value">71.5K</div><div className="metric-sub">Gratis (7 dias)</div></div>
+                            <div className="metric green"><div className="metric-label">Total Procesados</div><div className="metric-value">148.3K</div><div className="metric-sub">Conversaciones Nov</div></div>
+                        </div>
+                        <div className="box" style={{marginTop: 15}}>
+                            <h3>Tipos de AI Chats:</h3>
+                            <ul>
+                                <li><strong>Invoice Count Conversation:</strong> Chats incluidos en la factura del mes. ESTOS SE COBRAN.</li>
+                                <li><strong>Conversations In Trial:</strong> Chats durante el periodo de prueba de 7 dias. NO SE COBRAN.</li>
+                                <li><strong>Conversations After Trial:</strong> Chats totales despues del trial (acumulado historico).</li>
+                            </ul>
+                        </div>
+                        <div className="box green" style={{marginTop: 10}}>
+                            <p><strong>Para este reporte:</strong> Usamos <code>Invoice Count Conversation</code> para medir chats facturados (revenue) y <code>Conversations In Trial</code> para medir potencial de conversion.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S12 - New Payments
+        function S12() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag green">Crecimiento</span>
+                        <h1>New Payments: +116%</h1>
+                        <h2>Merchants que pagaron su primera factura</h2>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-2">
+                            <div className="metric dark"><div className="metric-label">Octubre</div><div className="metric-value">69</div><div className="metric-sub">nuevos que pagaron</div></div>
+                            <div className="metric green"><div className="metric-label">Noviembre</div><div className="metric-value">149</div><div className="metric-sub">nuevos que pagaron</div></div>
+                        </div>
+                        <table style={{marginTop: 20}}>
+                            <thead><tr><th>Metrica</th><th>Octubre</th><th>Noviembre</th><th>Cambio</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>Merchants nuevos</strong></td><td>69</td><td>149</td><td className="good">+116%</td></tr>
+                                <tr><td><strong>Revenue de nuevos</strong></td><td>$131</td><td>$888</td><td className="good">+578%</td></tr>
+                                <tr><td><strong>AI Chats de nuevos</strong></td><td>1,050</td><td>16,576</td><td className="good">+1,479%</td></tr>
+                                <tr><td><strong>ARPU nuevos</strong></td><td>$1.90</td><td>$5.96</td><td className="good">+214%</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="box green" style={{marginTop: 15}}>
+                            <h3 style={{color: "#00965E"}}>Los nuevos de Nov son de mejor calidad</h3>
+                            <p>6x mas revenue por merchant y 15x mas chats. El funnel esta convirtiendo mejor.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S13 - Pendientes
+        function S13() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag orange">Pendientes</span>
+                        <h1>560 Merchants por Cobrar</h1>
+                        <h2>$3,987 facturado sin pagar</h2>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-3">
+                            <div className="metric dark"><div className="metric-label">Total Pendiente</div><div className="metric-value">560</div><div className="metric-sub">merchants</div></div>
+                            <div className="metric orange"><div className="metric-label">Revenue Pendiente</div><div className="metric-value">$3,987</div></div>
+                            <div className="metric blue"><div className="metric-label">Chats Pendientes</div><div className="metric-value">33.7K</div></div>
+                        </div>
+                        <table style={{marginTop: 15}}>
+                            <thead><tr><th>Tipo</th><th>Merchants</th><th>Revenue</th><th>Descripcion</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>Primera factura</strong></td><td>257</td><td>$1,432</td><td>Nunca pagaron antes (riesgo)</td></tr>
+                                <tr><td><strong>Recurrentes</strong></td><td>303</td><td>$2,556</td><td>Ya pagaron antes (mas probable)</td></tr>
+                            </tbody>
+                            <tfoot><tr style={{background: "#F3F4F6"}}><td><strong>TOTAL</strong></td><td><strong>560</strong></td><td><strong>$3,987</strong></td><td></td></tr></tfoot>
+                        </table>
+                        <div className="box orange" style={{marginTop: 15}}>
+                            <h3 style={{color: "#FF7A27"}}>Pregunta clave: Van a pagar?</h3>
+                            <p>Analizamos su actividad reciente (Last Conversation Date) para predecir probabilidad de cobro.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S14 - Pendientes actividad
+        function S14() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag orange">Pendientes</span>
+                        <h1>Analisis de Actividad</h1>
+                        <h2>Usaron el chat en la ultima semana?</h2>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-2">
+                            <div className="metric green"><div className="metric-label">Activos (usaron 7d)</div><div className="metric-value">315</div><div className="metric-sub">56% - Van a pagar ($3,150)</div></div>
+                            <div className="metric red"><div className="metric-label">Inactivos (+7d)</div><div className="metric-value">245</div><div className="metric-sub">44% - Riesgo ($837)</div></div>
+                        </div>
+                        <table style={{marginTop: 20}}>
+                            <thead><tr><th>Tipo</th><th>Total</th><th>Activo 7d</th><th>$ OK</th><th>Inactivo</th><th>$ Riesgo</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>Primera factura</strong></td><td>257</td><td className="good">152 (59%)</td><td className="good">$1,107</td><td className="bad">105</td><td className="bad">$324</td></tr>
+                                <tr><td><strong>Recurrentes</strong></td><td>303</td><td className="good">163 (54%)</td><td className="good">$2,043</td><td className="bad">140</td><td className="bad">$513</td></tr>
+                            </tbody>
+                            <tfoot><tr style={{background: "#F3F4F6"}}><td><strong>TOTAL</strong></td><td><strong>560</strong></td><td><strong>315</strong></td><td className="good"><strong>$3,150</strong></td><td><strong>245</strong></td><td className="bad"><strong>$837</strong></td></tr></tfoot>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 15}}>
+                            <div className="box green"><h3 style={{color: "#00965E"}}>Accion: Cobrar $3,150</h3><p>315 merchants activos. Activar cobranza urgente.</p></div>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>Riesgo: $837</h3><p>245 inactivos. Posible sales lost.</p></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S15 - Proyeccion
+        function S15() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag orange">Pendientes</span>
+                        <h1>Proyeccion de Cierre</h1>
+                        <h2>Cuanto vamos a terminar cobrando?</h2>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>Escenario</th><th>Revenue</th><th>vs Oct ($9,932)</th><th>Prob</th></tr></thead>
+                            <tbody>
+                                <tr style={{background: "#FEF2F2"}}><td><strong>Pesimista</strong> (solo cobrado)</td><td>$8,094</td><td className="bad">-18.5%</td><td>100%</td></tr>
+                                <tr style={{background: "#FFF7ED"}}><td><strong>Conservador</strong> (+50% activos)</td><td>$9,669</td><td className="warn">-2.6%</td><td>Alta</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><strong>Esperado</strong> (+pendientes activos)</td><td className="good">$11,244</td><td className="good">+13.2%</td><td>Probable</td></tr>
+                                <tr style={{background: "#EFF6FF"}}><td><strong>Optimista</strong> (+todos)</td><td>$12,082</td><td className="good">+21.6%</td><td>Posible</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="box green" style={{marginTop: 20}}>
+                            <h3 style={{color: "#00965E"}}>Escenario esperado: $11,244 (+13.2% vs Oct)</h3>
+                            <p>Si cobramos a los 315 merchants activos, superamos Octubre.</p>
+                        </div>
+                        <div className="box orange" style={{marginTop: 10}}>
+                            <h3 style={{color: "#FF7A27"}}>Accion inmediata</h3>
+                            <p>Priorizar cobranza de <strong>315 merchants activos</strong> ($3,150). Estan usando el producto.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S16 - Churn intro
+        function S16() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag red">Churn</span>
+                        <h1>Analisis de Churn</h1>
+                        <h2>Quienes dejaron de pagar y por que?</h2>
+                    </div>
+                    <div className="content">
+                        <div className="box red" style={{marginBottom: 20}}>
+                            <h3 style={{color: "#EC3F41"}}>Definicion de Churn para este reporte</h3>
+                            <p>Un merchant es <strong>CHURN</strong> si:</p>
+                            <ul>
+                                <li>PAGO una factura de Octubre</li>
+                                <li>NO tiene factura de Noviembre generada</li>
+                                <li>Esta INACTIVO (no uso el chat en Nov/Dic)</li>
+                            </ul>
+                        </div>
+                        <div className="metrics metrics-4">
+                            <div className="metric red"><div className="metric-label">Logo Churn</div><div className="metric-value">21.1%</div><div className="metric-sub">155 merchants</div></div>
+                            <div className="metric orange"><div className="metric-label">GMV Churn</div><div className="metric-value">16.5%</div><div className="metric-sub">$1.58M perdido</div></div>
+                            <div className="metric dark"><div className="metric-label">Revenue Churn</div><div className="metric-value">8.9%</div><div className="metric-sub">$887 perdido</div></div>
+                            <div className="metric blue"><div className="metric-label">Chats Churn</div><div className="metric-value">8.9%</div><div className="metric-sub">8.3K perdidos</div></div>
+                        </div>
+                        <div className="box green" style={{marginTop: 15}}>
+                            <h3 style={{color: "#00965E"}}>Buena noticia: Revenue Churn (8.9%) es menor que Logo Churn (21.1%)</h3>
+                            <p>Perdimos 21% de merchants pero solo 9% del revenue. Los que se fueron pagaban poco.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S17 - Churn flujo
+        function S17() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag red">Churn</span>
+                        <h1>Flujo de Oct a Nov</h1>
+                    </div>
+                    <div className="content">
+                        <div className="flow">
+                            <div className="flow-item" style={{background: "#EFF6FF"}}><div style={{fontSize: 10}}>Pagaron Oct</div><div style={{fontSize: 32, fontWeight: 700}}>736</div></div>
+                            <div className="flow-arrow">→</div>
+                            <div className="flow-item" style={{background: "#ECFDF5"}}><div style={{fontSize: 10}}>Tienen fact Nov</div><div style={{fontSize: 32, fontWeight: 700, color: "#00965E"}}>564</div></div>
+                            <div className="flow-arrow">→</div>
+                            <div className="flow-item" style={{background: "#FFF7ED"}}><div style={{fontSize: 10}}>Sin fact Nov</div><div style={{fontSize: 32, fontWeight: 700, color: "#FF7A27"}}>172</div></div>
+                            <div className="flow-arrow">→</div>
+                            <div className="flow-item" style={{background: "#FEF2F2"}}><div style={{fontSize: 10}}>Inactivos</div><div style={{fontSize: 32, fontWeight: 700, color: "#EC3F41"}}>155</div></div>
+                        </div>
+                        <div className="grid grid-2" style={{marginTop: 30}}>
+                            <div className="box red" style={{textAlign: "center"}}>
+                                <h3 style={{color: "#EC3F41"}}>CHURN REAL</h3>
+                                <div style={{fontSize: 56, fontWeight: 700}}>155</div>
+                                <p>21.1% de la base Oct</p>
+                            </div>
+                            <div className="box green" style={{textAlign: "center"}}>
+                                <h3 style={{color: "#00965E"}}>RETENCION</h3>
+                                <div style={{fontSize: 56, fontWeight: 700}}>78.9%</div>
+                                <p>581 de 736 continuan</p>
+                            </div>
+                        </div>
+                        <div className="box orange" style={{marginTop: 15}}>
+                            <p><strong>17 merchants</strong> sin factura pero activos no son churn (posible problema de billing).</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S18 - Churn por plan
+        function S18() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag red">Churn</span>
+                        <h1>Churn por Plan</h1>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>Plan</th><th>Base Oct</th><th>Churn</th><th>Rate</th><th>Rev Perdido</th></tr></thead>
+                            <tbody>
+                                <tr style={{background: "#FEF2F2"}}><td><strong>plan-a</strong></td><td>274</td><td className="bad">75</td><td className="bad">27.4%</td><td>$175</td></tr>
+                                <tr><td><strong>plan-b</strong></td><td>258</td><td className="warn">49</td><td className="warn">19.0%</td><td>$293</td></tr>
+                                <tr><td><strong>enterprise</strong></td><td>84</td><td>14</td><td>16.7%</td><td>$219</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><strong>plan-c</strong></td><td>110</td><td>15</td><td className="good">13.6%</td><td>$198</td></tr>
+                            </tbody>
+                            <tfoot><tr style={{background: "#F3F4F6"}}><td><strong>TOTAL</strong></td><td><strong>736</strong></td><td><strong>155</strong></td><td><strong>21.1%</strong></td><td><strong>$887</strong></td></tr></tfoot>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 20}}>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>Plan-A: 27.4% churn</h3><p>El mas alto. Correlaciona con 76% que pagan menos de $5.</p></div>
+                            <div className="box green"><h3 style={{color: "#00965E"}}>Plan-C: 13.6% churn</h3><p>El mas bajo. Mejor producto-market fit.</p></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S19 - Churn por pais
+        function S19() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag red">Churn</span>
+                        <h1>Churn por Pais</h1>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>Pais</th><th>Base Oct</th><th>Retenidos</th><th>Churn</th><th>Rate</th></tr></thead>
+                            <tbody>
+                                <tr style={{background: "#FEF2F2"}}><td><span className="flag">🇨🇴</span><strong>Colombia</strong></td><td>22</td><td>14</td><td className="bad">8</td><td className="bad">36.4%</td></tr>
+                                <tr style={{background: "#FEF2F2"}}><td><span className="flag">🇧🇷</span><strong>Brasil</strong></td><td>330</td><td>251</td><td className="bad">79</td><td className="bad">23.9%</td></tr>
+                                <tr><td><span className="flag">🇦🇷</span><strong>Argentina</strong></td><td>346</td><td>268</td><td className="warn">78</td><td className="warn">22.5%</td></tr>
+                                <tr><td><span className="flag">🇲🇽</span><strong>Mexico</strong></td><td>35</td><td>28</td><td>7</td><td>20.0%</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><span className="flag">🇨🇱</span><strong>Chile</strong></td><td>3</td><td>3</td><td className="good">0</td><td className="good">0%</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 20}}>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>Colombia: 36.4% churn</h3><p>El mas alto. ARPU bajo ($6.71). Revisar mercado.</p></div>
+                            <div className="box orange"><h3 style={{color: "#FF7A27"}}>Brasil: 79 churns (51%)</h3><p>Mayor cantidad absoluta. Es el mercado mas grande.</p></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S20 - Revenue Churn
+        function S20() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag red">Churn</span>
+                        <h1>Revenue vs Logo Churn</h1>
+                        <h2>Perdemos merchants, pero no los mejores</h2>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-2">
+                            <div className="metric dark"><div className="metric-label">ARPU Churneados</div><div className="metric-value">$5.72</div><div className="metric-sub">Los que se fueron</div></div>
+                            <div className="metric green"><div className="metric-label">ARPU Retenidos</div><div className="metric-value">$15.58</div><div className="metric-sub">Los que quedan</div></div>
+                        </div>
+                        <div className="box green" style={{marginTop: 20, textAlign: "center"}}>
+                            <h3 style={{color: "#00965E", fontSize: 20}}>Los retenidos pagan 2.7x mas que los churneados</h3>
+                            <p>El churn es de bajo valor. Retenemos a los mejores clientes.</p>
+                        </div>
+                        <table style={{marginTop: 15}}>
+                            <thead><tr><th>Metrica</th><th>Churneados</th><th>Retenidos</th><th>Ratio</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>Merchants</strong></td><td>155</td><td>581</td><td>1:3.7</td></tr>
+                                <tr><td><strong>Revenue</strong></td><td>$887 (8.9%)</td><td>$9,045 (91.1%)</td><td>1:10</td></tr>
+                                <tr><td><strong>AI Chats</strong></td><td>8,271 (8.9%)</td><td>84,775 (91.1%)</td><td>1:10</td></tr>
+                                <tr><td><strong>ARPU</strong></td><td>$5.72</td><td>$15.58</td><td>1:2.7</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        // S21 - Distribución de Precios
+        function S21() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag dark">Pricing</span>
+                        <h1>Distribución de Precios - Noviembre</h1>
+                        <h2>¿Cuánto paga cada merchant?</h2>
+                    </div>
+                    <div className="content">
+                        <table style={{fontSize: 12}}>
+                            <thead><tr><th>Rango</th><th>Merchants</th><th>%</th><th>Revenue</th><th>% Rev</th><th>Acumulado</th></tr></thead>
+                            <tbody>
+                                <tr style={{background: "#FEF2F2"}}><td><strong>$0 - $1</strong></td><td>144</td><td>25.5%</td><td>$64</td><td className="bad">0.8%</td><td>25.5%</td></tr>
+                                <tr style={{background: "#FEF2F2"}}><td><strong>$1 - $5</strong></td><td>157</td><td>27.8%</td><td>$419</td><td className="bad">5.2%</td><td className="bad">53.4%</td></tr>
+                                <tr style={{background: "#FFF7ED"}}><td><strong>$5 - $10</strong></td><td>69</td><td>12.2%</td><td>$498</td><td>6.1%</td><td>65.6%</td></tr>
+                                <tr><td><strong>$10 - $25</strong></td><td>98</td><td>17.4%</td><td>$1,575</td><td>19.5%</td><td>83.0%</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><strong>$25 - $50</strong></td><td>63</td><td>11.2%</td><td>$2,248</td><td className="good">27.8%</td><td>94.1%</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><strong>$50 - $100</strong></td><td>21</td><td>3.7%</td><td>$1,374</td><td className="good">17.0%</td><td>97.9%</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><strong>$100+</strong></td><td>12</td><td className="good">2.1%</td><td>$1,917</td><td className="good">23.7%</td><td>100%</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 15}}>
+                            <div className="box red">
+                                <h3 style={{color: "#EC3F41"}}>53% paga menos de $5</h3>
+                                <p style={{fontSize: 13}}>301 merchants generan solo <strong>$483 (6%)</strong> del revenue total.</p>
+                            </div>
+                            <div className="box green">
+                                <h3 style={{color: "#00965E"}}>6% paga más de $50</h3>
+                                <p style={{fontSize: 13}}>33 merchants generan <strong>$3,291 (41%)</strong> del revenue total.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S22 - ARPU Comparativa Oct vs Nov
+        function S22() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag dark">ARPU</span>
+                        <h1>ARPU: Octubre vs Noviembre</h1>
+                        <h2>Evolución y análisis por segmento</h2>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-4" style={{marginBottom: 15}}>
+                            <div className="metric"><div className="metric-label">ARPU Oct</div><div className="metric-value">$13.07</div></div>
+                            <div className="metric"><div className="metric-label">ARPU Nov</div><div className="metric-value">$14.35</div><div className="metric-sub good">+9.8%</div></div>
+                            <div className="metric green"><div className="metric-label">ARPU Real Oct</div><div className="metric-value">$26.63</div><div className="metric-sub">Solo >$5</div></div>
+                            <div className="metric green"><div className="metric-label">ARPU Real Nov</div><div className="metric-value">$28.94</div><div className="metric-sub good">+8.7%</div></div>
+                        </div>
+                        <table style={{fontSize: 12}}>
+                            <thead><tr><th>Rango</th><th>Oct Merchants</th><th>Oct Rev</th><th>Nov Merchants</th><th>Nov Rev</th><th>Δ Merchants</th></tr></thead>
+                            <tbody>
+                                <tr style={{background: "#FEF2F2"}}><td><strong>$0 - $5</strong></td><td>386 (54%)</td><td>$571 (6%)</td><td>301 (53%)</td><td>$483 (6%)</td><td className="good">-85 ✓</td></tr>
+                                <tr><td><strong>$5 - $25</strong></td><td>219 (31%)</td><td>$2,762 (30%)</td><td>167 (30%)</td><td>$2,073 (26%)</td><td className="bad">-52</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><strong>$25 - $100</strong></td><td>101 (14%)</td><td>$4,456 (48%)</td><td>84 (15%)</td><td>$3,622 (45%)</td><td className="bad">-17</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><strong>$100+</strong></td><td>10 (1%)</td><td>$1,568 (17%)</td><td>12 (2%)</td><td>$1,917 (24%)</td><td className="good">+2 ✓</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 12}}>
+                            <div className="box green">
+                                <h3 style={{color: "#00965E"}}>Lo bueno</h3>
+                                <p style={{fontSize: 12}}>• ARPU Real subió de $26.63 a $28.94<br/>• 85 merchants low-value se fueron (bien)<br/>• +2 merchants en segmento $100+</p>
+                            </div>
+                            <div className="box orange">
+                                <h3 style={{color: "#FF7A27"}}>Lo preocupante</h3>
+                                <p style={{fontSize: 12}}>• Perdimos 69 merchants mid-value ($5-$100)<br/>• Revenue total bajó $1,264<br/>• Base total se achicó 21%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S23 - Amplitude data
+        function S23() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag blue">Amplitude</span>
+                        <h1>Metricas de Producto</h1>
+                        <h2>Datos de Amplitude - Nov vs Oct</h2>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>Metrica</th><th>Octubre</th><th>Noviembre</th><th>Cambio</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>Free Trial Starts</strong></td><td>1,323</td><td>1,119</td><td className="bad">-15.4%</td></tr>
+                                <tr><td><strong>Menu Clicks (interes)</strong></td><td>71,343</td><td>66,104</td><td className="warn">-7.3%</td></tr>
+                                <tr><td><strong>QR Generation</strong></td><td>136</td><td>106</td><td className="bad">-22%</td></tr>
+                                <tr><td><strong>Playground Messages</strong></td><td>5,407</td><td>4,376</td><td className="bad">-19%</td></tr>
+                                <tr><td><strong>Copilot Use</strong></td><td>81</td><td>64</td><td className="bad">-21%</td></tr>
+                                <tr><td><strong>Billing Modal (post-trial)</strong></td><td>10,709</td><td>9,732</td><td className="warn">-9%</td></tr>
+                                <tr><td><strong>Click Pagar Plan</strong></td><td>2,641</td><td>2,385</td><td className="warn">-9.7%</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 15}}>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>Trials cayeron 15%</h3><p>Menos usuarios entrando al funnel.</p></div>
+                            <div className="box orange"><h3 style={{color: "#FF7A27"}}>Conversion estable: 24.5%</h3><p>El problema es top of funnel.</p></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S24 - Amplitude por pais
+        function S24() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag blue">Amplitude</span>
+                        <h1>Free Trial Starts por Pais</h1>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>Pais</th><th>Octubre</th><th>Noviembre</th><th>Cambio</th><th>% del Total</th></tr></thead>
+                            <tbody>
+                                <tr style={{background: "#FEF2F2"}}><td><span className="flag">🇧🇷</span><strong>Brasil</strong></td><td>807</td><td>632</td><td className="bad">-21.7%</td><td>56%</td></tr>
+                                <tr><td><span className="flag">🇦🇷</span><strong>Argentina</strong></td><td>381</td><td>339</td><td className="warn">-11%</td><td>30%</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><span className="flag">🇲🇽</span><strong>Mexico</strong></td><td>67</td><td>76</td><td className="good">+13.4%</td><td>7%</td></tr>
+                                <tr><td><span className="flag">🇨🇴</span><strong>Colombia</strong></td><td>51</td><td>51</td><td>0%</td><td>5%</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><span className="flag">🇨🇱</span><strong>Chile</strong></td><td>9</td><td>18</td><td className="good">+100%</td><td>2%</td></tr>
+                            </tbody>
+                            <tfoot><tr style={{background: "#F3F4F6"}}><td><strong>TOTAL</strong></td><td><strong>1,323</strong></td><td><strong>1,119</strong></td><td className="bad"><strong>-15.4%</strong></td><td></td></tr></tfoot>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 15}}>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>Brasil: -21.7% trials</h3><p>175 trials menos. Es el 56% del total.</p></div>
+                            <div className="box green"><h3 style={{color: "#00965E"}}>Mexico y Chile creciendo</h3><p>+13% y +100% respectivamente.</p></div>
+                        </div>
+                        <div className="box blue" style={{marginTop: 10}}>
+                            <p>La caida de trials se concentra en <strong>Brasil (-175)</strong> y <strong>Argentina (-42)</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S25 - Resumen AI Chats
+        function S25() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag blue">AI Chats</span>
+                        <h1>Resumen AI Chats Noviembre</h1>
+                        <h2>Todos los chats procesados (facturados y gratuitos)</h2>
+                    </div>
+                    <div className="content">
+                        <div className="metrics metrics-3">
+                            <div className="metric green"><div className="metric-label">Chats Facturados</div><div className="metric-value">76.8K</div><div className="metric-sub">Lo que cobramos</div></div>
+                            <div className="metric blue"><div className="metric-label">Chats en Trial</div><div className="metric-value">71.5K</div><div className="metric-sub">Gratis (potencial)</div></div>
+                            <div className="metric dark"><div className="metric-label">Total Procesados</div><div className="metric-value">148.3K</div><div className="metric-sub">Conversaciones IA</div></div>
+                        </div>
+                        <div className="box" style={{marginTop: 20}}>
+                            <h3>Desglose por estado:</h3>
+                            <table style={{fontSize: 13}}>
+                                <thead><tr><th>Tipo</th><th>Chats</th><th>%</th><th>Descripcion</th></tr></thead>
+                                <tbody>
+                                    <tr style={{background: "#ECFDF5"}}><td><strong>Facturados (pagados)</strong></td><td>76,795</td><td>52%</td><td>Chats de merchants que pagaron Nov</td></tr>
+                                    <tr style={{background: "#FFF7ED"}}><td><strong>Facturados (pendientes)</strong></td><td>33,705</td><td>23%</td><td>Chats de merchants con factura sin pagar</td></tr>
+                                    <tr style={{background: "#EFF6FF"}}><td><strong>En Trial</strong></td><td>71,508</td><td>48%</td><td>Chats gratis durante periodo de prueba</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="box green" style={{marginTop: 15}}>
+                            <h3 style={{color: "#00965E"}}>148K conversaciones de IA atendidas</h3>
+                            <p>Cada una es un cliente del merchant que recibio atencion automatica.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S26 - Insights
+        function S26() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag">Insights</span>
+                        <h1>Patrones Importantes</h1>
+                    </div>
+                    <div className="content">
+                        <div className="box red" style={{marginBottom: 12}}>
+                            <h3 style={{color: "#EC3F41"}}>1. El churn ocurre 30-60 dias ANTES de dejar de pagar</h3>
+                            <p>63% de los churneados dejaron de usar en Ago/Sep pero pagaron Oct. Oportunidad de early warning.</p>
+                        </div>
+                        <div className="box orange" style={{marginBottom: 12}}>
+                            <h3 style={{color: "#FF7A27"}}>2. Plan-A es problematico</h3>
+                            <p>76% pagan menos de $5, 27.4% churn rate. No es rentable en su estado actual.</p>
+                        </div>
+                        <div className="box blue" style={{marginBottom: 12}}>
+                            <h3 style={{color: "#59A9FF"}}>3. Brasil necesita atencion urgente</h3>
+                            <p>-21.7% trials, 24% churn. Es el 56% de nuestro funnel y esta cayendo.</p>
+                        </div>
+                        <div className="box green">
+                            <h3 style={{color: "#00965E"}}>4. Los nuevos son mejores</h3>
+                            <p>+116% new payments con 6x mas revenue por merchant. El funnel esta madurando.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S27 - Resumen por segmento
+        function S27() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag">Resumen</span>
+                        <h1>Estado de Noviembre por Segmento</h1>
+                    </div>
+                    <div className="content">
+                        <table style={{fontSize: 12}}>
+                            <thead><tr><th>Segmento</th><th>Merch</th><th>Revenue</th><th>Chats</th><th>Estado</th></tr></thead>
+                            <tbody>
+                                <tr style={{background: "#ECFDF5"}}><td><strong>Pagado recurrente</strong></td><td>415</td><td className="good">$7,207</td><td>60.2K</td><td>✓ OK</td></tr>
+                                <tr style={{background: "#ECFDF5"}}><td><strong>Pagado nuevo</strong></td><td>149</td><td className="good">$888</td><td>16.6K</td><td>✓ OK</td></tr>
+                                <tr style={{background: "#EFF6FF"}}><td><strong>Pendiente activo</strong></td><td>315</td><td style={{color: "#59A9FF"}}>$3,150</td><td>22.3K</td><td>Por cobrar</td></tr>
+                                <tr style={{background: "#FFF7ED"}}><td><strong>Pendiente inactivo</strong></td><td>245</td><td className="warn">$837</td><td>11.4K</td><td>Riesgo</td></tr>
+                                <tr style={{background: "#FEF2F2"}}><td><strong>Churn (sin factura)</strong></td><td>155</td><td className="bad">$0</td><td>0</td><td>Perdido</td></tr>
+                            </tbody>
+                            <tfoot><tr style={{background: "#F3F4F6"}}><td><strong>TOTAL</strong></td><td><strong>1,279</strong></td><td><strong>$12,082</strong></td><td><strong>110.5K</strong></td><td></td></tr></tfoot>
+                        </table>
+                        <div className="grid grid-2" style={{marginTop: 15}}>
+                            <div className="box green"><h3 style={{color: "#00965E"}}>$11,245 seguros (93%)</h3><p>Pagado + Pendientes activos</p></div>
+                            <div className="box red"><h3 style={{color: "#EC3F41"}}>$837 en riesgo (7%)</h3><p>Pendientes inactivos</p></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S28 - Conclusiones
+        function S28() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag green">Conclusiones</span>
+                        <h1>Que aprendimos de Noviembre?</h1>
+                    </div>
+                    <div className="content">
+                        <div className="box green">
+                            <h3 style={{color: "#00965E"}}>✓ Lo bueno</h3>
+                            <ul>
+                                <li>New payments +116% (149 vs 69) con mejor calidad</li>
+                                <li>ARPU creciendo +6.4% ($13.49 → $14.35)</li>
+                                <li>Revenue churn (8.9%) menor que logo churn (21.1%)</li>
+                                <li>148K conversaciones de IA procesadas</li>
+                            </ul>
+                        </div>
+                        <div className="box red" style={{marginTop: 12}}>
+                            <h3 style={{color: "#EC3F41"}}>✗ Lo preocupante</h3>
+                            <ul>
+                                <li>155 merchants churnearon (21.1%)</li>
+                                <li>Plan-A: 27.4% churn, 76% pagan menos de $5</li>
+                                <li>Brasil: -21.7% trials, 24% churn</li>
+                                <li>$3,987 pendiente de cobrar</li>
+                            </ul>
+                        </div>
+                        <div className="box orange" style={{marginTop: 12}}>
+                            <h3 style={{color: "#FF7A27"}}>⚠ Pendiente urgente</h3>
+                            <p>Cobrar <strong>$3,150</strong> de 315 merchants activos para cerrar Nov +13% vs Oct.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S29 - Acciones
+        function S29() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag green">Acciones</span>
+                        <h1>Que hacer ahora?</h1>
+                    </div>
+                    <div className="content">
+                        <div className="box red">
+                            <h3 style={{color: "#EC3F41"}}>1. URGENTE: Cobrar pendientes activos</h3>
+                            <p>315 merchants usaron el chat esta semana pero no pagaron. $3,150 por cobrar.</p>
+                        </div>
+                        <div className="box orange" style={{marginTop: 10}}>
+                            <h3 style={{color: "#FF7A27"}}>2. Revisar Plan-A</h3>
+                            <p>76% pagan menos de $5, 27.4% churn. Evaluar aumentar precio minimo o mover a freemium.</p>
+                        </div>
+                        <div className="box blue" style={{marginTop: 10}}>
+                            <h3 style={{color: "#59A9FF"}}>3. Investigar caida Brasil</h3>
+                            <p>-21.7% trials es critico. Es el 56% del funnel. Revisar campanas y acquisition.</p>
+                        </div>
+                        <div className="box" style={{marginTop: 10}}>
+                            <h3>4. Implementar Early Warning</h3>
+                            <p>63% de churns estaban inactivos 30-60 dias antes. Alertar cuando no usan en 2 semanas.</p>
+                        </div>
+                        <div className="box green" style={{marginTop: 10}}>
+                            <h3 style={{color: "#00965E"}}>5. Expandir Mexico y Chile</h3>
+                            <p>Unicos mercados con trials creciendo (+13% y +100%). Oportunidad de inversion.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S30 - KPIs objetivo
+        function S30() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag">Objetivos</span>
+                        <h1>KPIs a Monitorear</h1>
+                    </div>
+                    <div className="content">
+                        <table>
+                            <thead><tr><th>KPI</th><th>Actual Nov</th><th>Target Dic</th><th>Accion</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>Churn Rate</strong></td><td className="bad">21.1%</td><td className="good">menor a 15%</td><td>Early warning + retencion</td></tr>
+                                <tr><td><strong>Revenue</strong></td><td>$8,094 cobrado</td><td className="good">$12,000+</td><td>Cobrar pendientes</td></tr>
+                                <tr><td><strong>Trials Brasil</strong></td><td className="bad">632 (-21%)</td><td>700+</td><td>Revisar acquisition</td></tr>
+                                <tr><td><strong>Plan-A Churn</strong></td><td className="bad">27.4%</td><td>menor a 20%</td><td>Revisar pricing/producto</td></tr>
+                                <tr><td><strong>ARPU</strong></td><td>$14.35</td><td className="good">$15+</td><td>Upsell a planes mayores</td></tr>
+                            </tbody>
+                        </table>
+                        <div className="box blue" style={{marginTop: 20}}>
+                            <h3 style={{color: "#59A9FF"}}>Metricas Amplitude a revisar semanalmente</h3>
+                            <ul>
+                                <li>Free Trial Starts (por pais)</li>
+                                <li>Billing Modal Show → Click Pagar (conversion)</li>
+                                <li>Playground usage (engagement)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S31 - Timeline
+        function S31() {
+            return (
+                <div className="slide">
+                    <div className="header">
+                        <span className="tag">Timeline</span>
+                        <h1>Proximos Pasos</h1>
+                    </div>
+                    <div className="content">
+                        <div className="box red" style={{marginBottom: 12}}>
+                            <h3 style={{color: "#EC3F41"}}>Esta semana</h3>
+                            <ul>
+                                <li>Activar cobranza a 315 merchants activos con factura pendiente</li>
+                                <li>Contactar los 17 merchants activos sin factura (billing issue)</li>
+                            </ul>
+                        </div>
+                        <div className="box orange" style={{marginBottom: 12}}>
+                            <h3 style={{color: "#FF7A27"}}>Proximas 2 semanas</h3>
+                            <ul>
+                                <li>Analisis profundo de caida de trials en Brasil</li>
+                                <li>Propuesta de ajuste de pricing Plan-A</li>
+                                <li>Implementar alerta de inactividad 2 semanas</li>
+                            </ul>
+                        </div>
+                        <div className="box blue" style={{marginBottom: 12}}>
+                            <h3 style={{color: "#59A9FF"}}>Diciembre</h3>
+                            <ul>
+                                <li>Test de nuevos precios Plan-A</li>
+                                <li>Campana de reactivacion para inactivos</li>
+                                <li>Plan de expansion Mexico/Chile</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // S32 - Cierre
+        function S32() {
+            return (
+                <div className="slide dark" style={{justifyContent: "center", textAlign: "center"}}>
+                    <div>
+                        <div style={{fontSize: 14, color: "#59A9FF", marginBottom: 20, letterSpacing: 2}}>NUVEM CHAT</div>
+                        <h1 style={{fontSize: 48, marginBottom: 30}}>Gracias</h1>
+                        <p style={{fontSize: 18, color: "#9CA3AF", marginBottom: 40}}>Reporte Noviembre 2025</p>
+                        <div className="metrics metrics-3" style={{maxWidth: 700, margin: "0 auto"}}>
+                            <div className="metric green"><div className="metric-label">Revenue</div><div className="metric-value">$8.1K</div><div className="metric-sub">cobrado</div></div>
+                            <div className="metric blue"><div className="metric-label">New Payments</div><div className="metric-value">+116%</div></div>
+                            <div className="metric orange"><div className="metric-label">Por Cobrar</div><div className="metric-value">$3.1K</div></div>
+                        </div>
+                        <p style={{marginTop: 40, color: "#6B7280", fontSize: 14}}>Preguntas? → agustin.parraquini@tiendanube.com</p>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+
+    <!-- SISTEMA DE COMENTARIOS NUVEM CHAT CON SINCRONIZACIÓN -->
+    <script>
+    (function() {
+        'use strict';
+        
+        // === CONFIGURACIÓN ===
+        const CONFIG = {
+            presentationId: 'nuvemchat-nov-2025',
+            storageKey: 'nuvemchat_comments_v2',
+            // Backend: npoint.io (gratuito, sin auth)
+            // Crear tu endpoint en https://www.npoint.io/ y pegar el ID aquí
+            npointId: 'TU_NPOINT_ID', // Reemplazar con tu ID de npoint.io
+            syncEnabled: false, // Cambiar a true cuando tengas el npointId
+            syncInterval: 15000, // Sync cada 15 segundos
+            // GitHub Discussions config (Giscus)
+            github: {
+                repo: 'nuvemchat-report-nov2025',
+                owner: 'TU_USUARIO_GITHUB' // Reemplazar con tu usuario
+            }
+        };
+
+        // === ESTADO ===
+        let state = {
+            comments: [],
+            userName: localStorage.getItem('commenter_name') || null,
+            userColor: localStorage.getItem('commenter_color') || getRandomColor(),
+            currentSlide: 1,
+            isAddingComment: false,
+            panelOpen: false,
+            filter: 'all'
+        };
+
+        function getRandomColor() {
+            const colors = ['#59A9FF', '#00965E', '#FF7A27', '#EC3F41', '#8B5CF6', '#EC4899', '#14B8A6', '#F59E0B'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            localStorage.setItem('commenter_color', color);
+            return color;
+        }
+
+        // === ESTILOS ===
+        function injectStyles() {
+            const style = document.createElement('style');
+            style.textContent = `
+                .nc-panel {
+                    position: fixed;
+                    right: -400px;
+                    top: 0;
+                    width: 380px;
+                    height: 100vh;
+                    background: white;
+                    box-shadow: -4px 0 24px rgba(0,0,0,0.2);
+                    z-index: 10000;
+                    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    display: flex;
+                    flex-direction: column;
+                    font-family: 'Inter', -apple-system, sans-serif;
+                }
+                .nc-panel.open { right: 0; }
+                
+                .nc-header {
+                    padding: 18px 20px;
+                    background: linear-gradient(135deg, #010B23 0%, #1a1a3e 100%);
+                    color: white;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                .nc-header h3 { margin: 0; font-size: 15px; font-weight: 600; }
+                .nc-close {
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 26px;
+                    cursor: pointer;
+                    opacity: 0.7;
+                    transition: opacity 0.2s;
+                    line-height: 1;
+                }
+                .nc-close:hover { opacity: 1; }
+                
+                .nc-filters {
+                    display: flex;
+                    gap: 6px;
+                    padding: 12px 16px;
+                    background: #F9FAFB;
+                    border-bottom: 1px solid #E5E7EB;
+                }
+                .nc-filter {
+                    padding: 6px 12px;
+                    border: none;
+                    background: none;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    cursor: pointer;
+                    color: #6B7280;
+                    font-weight: 500;
+                    transition: all 0.2s;
+                }
+                .nc-filter:hover { background: #E5E7EB; }
+                .nc-filter.active { background: #010B23; color: white; }
+                
+                .nc-body {
+                    flex: 1;
+                    overflow-y: auto;
+                    padding: 16px;
+                }
+                
+                .nc-footer {
+                    padding: 16px;
+                    border-top: 1px solid #E5E7EB;
+                    background: #F9FAFB;
+                }
+                
+                .nc-toggle {
+                    position: fixed;
+                    right: 20px;
+                    top: 20px;
+                    width: 52px;
+                    height: 52px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, #010B23 0%, #1a1a3e 100%);
+                    color: white;
+                    border: none;
+                    cursor: pointer;
+                    z-index: 9999;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 22px;
+                    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+                    transition: transform 0.2s, box-shadow 0.2s;
+                }
+                .nc-toggle:hover {
+                    transform: scale(1.08);
+                    box-shadow: 0 6px 24px rgba(89,169,255,0.4);
+                }
+                .nc-badge {
+                    position: absolute;
+                    top: -4px;
+                    right: -4px;
+                    background: #EC3F41;
+                    color: white;
+                    font-size: 11px;
+                    font-weight: 700;
+                    padding: 2px 7px;
+                    border-radius: 10px;
+                    min-width: 18px;
+                    text-align: center;
+                    display: none;
+                }
+                
+                .nc-comment {
+                    background: #F9FAFB;
+                    border-radius: 12px;
+                    padding: 14px;
+                    margin-bottom: 12px;
+                    border-left: 4px solid #59A9FF;
+                    transition: all 0.2s;
+                    cursor: pointer;
+                }
+                .nc-comment:hover { background: #EFF6FF; transform: translateX(3px); }
+                .nc-comment.resolved { border-left-color: #00965E; opacity: 0.65; }
+                
+                .nc-comment-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: 8px;
+                }
+                .nc-author {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+                .nc-avatar {
+                    width: 34px;
+                    height: 34px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-weight: 700;
+                    font-size: 14px;
+                }
+                .nc-meta { display: flex; flex-direction: column; }
+                .nc-name { font-weight: 600; color: #010B23; font-size: 13px; }
+                .nc-time { font-size: 11px; color: #9CA3AF; }
+                .nc-slide-tag {
+                    background: #E5E7EB;
+                    color: #6B7280;
+                    font-size: 11px;
+                    padding: 3px 10px;
+                    border-radius: 10px;
+                    font-weight: 500;
+                }
+                .nc-text {
+                    color: #374151;
+                    font-size: 13px;
+                    line-height: 1.55;
+                    margin-bottom: 10px;
+                    white-space: pre-wrap;
+                }
+                .nc-actions {
+                    display: flex;
+                    gap: 4px;
+                    flex-wrap: wrap;
+                }
+                .nc-action {
+                    background: none;
+                    border: none;
+                    color: #6B7280;
+                    font-size: 11px;
+                    cursor: pointer;
+                    padding: 5px 8px;
+                    border-radius: 5px;
+                    transition: all 0.2s;
+                }
+                .nc-action:hover { background: #E5E7EB; color: #010B23; }
+                
+                .nc-replies {
+                    margin-top: 10px;
+                    padding-left: 14px;
+                    border-left: 2px solid #E5E7EB;
+                }
+                .nc-reply {
+                    padding: 10px;
+                    background: white;
+                    border-radius: 8px;
+                    margin-bottom: 6px;
+                }
+                
+                .nc-empty {
+                    text-align: center;
+                    padding: 50px 20px;
+                    color: #9CA3AF;
+                }
+                .nc-empty-icon { font-size: 52px; margin-bottom: 12px; }
+                
+                .nc-btn {
+                    background: linear-gradient(135deg, #59A9FF 0%, #3B82F6 100%);
+                    color: white;
+                    border: none;
+                    padding: 12px 20px;
+                    border-radius: 10px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    width: 100%;
+                    font-size: 14px;
+                    transition: transform 0.2s, box-shadow 0.2s;
+                }
+                .nc-btn:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 14px rgba(59,130,246,0.4);
+                }
+                
+                .nc-input {
+                    width: 100%;
+                    padding: 12px;
+                    border: 2px solid #E5E7EB;
+                    border-radius: 10px;
+                    font-size: 13px;
+                    resize: none;
+                    font-family: inherit;
+                    transition: border-color 0.2s;
+                }
+                .nc-input:focus {
+                    outline: none;
+                    border-color: #59A9FF;
+                }
+                
+                .nc-marker {
+                    position: absolute;
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, #59A9FF 0%, #3B82F6 100%);
+                    color: white;
+                    font-size: 11px;
+                    font-weight: 700;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    box-shadow: 0 3px 10px rgba(89,169,255,0.5);
+                    transition: transform 0.2s;
+                    z-index: 100;
+                    border: 2px solid white;
+                }
+                .nc-marker:hover { transform: scale(1.2); }
+                .nc-marker.resolved { background: linear-gradient(135deg, #00965E 0%, #059669 100%); }
+                
+                .nc-adding { cursor: crosshair !important; }
+                .nc-adding * { cursor: crosshair !important; }
+                
+                .nc-hint {
+                    position: fixed;
+                    bottom: 80px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #010B23;
+                    color: white;
+                    padding: 14px 28px;
+                    border-radius: 12px;
+                    font-size: 14px;
+                    z-index: 10001;
+                    display: none;
+                    box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+                }
+                .nc-adding .nc-hint { display: block; }
+                
+                .nc-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0,0,0,0.6);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 10002;
+                    backdrop-filter: blur(4px);
+                }
+                .nc-modal-content {
+                    background: white;
+                    padding: 32px;
+                    border-radius: 20px;
+                    max-width: 380px;
+                    width: 90%;
+                    text-align: center;
+                    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+                }
+                .nc-modal h3 { margin: 0 0 8px; color: #010B23; font-size: 22px; }
+                .nc-modal p { color: #6B7280; margin-bottom: 20px; font-size: 14px; }
+                .nc-modal input {
+                    width: 100%;
+                    padding: 14px;
+                    border: 2px solid #E5E7EB;
+                    border-radius: 10px;
+                    font-size: 16px;
+                    margin-bottom: 16px;
+                }
+                .nc-modal input:focus { outline: none; border-color: #59A9FF; }
+                
+                .nc-popup {
+                    position: fixed;
+                    background: white;
+                    padding: 20px;
+                    border-radius: 16px;
+                    box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+                    z-index: 10003;
+                    width: 320px;
+                }
+
+                @media (max-width: 768px) {
+                    .nc-panel { width: 100%; right: -100%; }
+                    .nc-toggle { right: 12px; top: 12px; width: 46px; height: 46px; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // === UI ===
+        function createUI() {
+            // Toggle button
+            const toggle = document.createElement('button');
+            toggle.className = 'nc-toggle';
+            toggle.innerHTML = '💬<span class="nc-badge">0</span>';
+            toggle.onclick = togglePanel;
+            document.body.appendChild(toggle);
+            
+            // Panel
+            const panel = document.createElement('div');
+            panel.className = 'nc-panel';
+            panel.id = 'nc-panel';
+            panel.innerHTML = `
+                <div class="nc-header">
+                    <h3>💬 Comentarios del Equipo</h3>
+                    <button class="nc-close" onclick="NuvemComments.togglePanel()">&times;</button>
+                </div>
+                <div class="nc-filters">
+                    <button class="nc-filter active" data-filter="all">Todos</button>
+                    <button class="nc-filter" data-filter="slide">Este slide</button>
+                    <button class="nc-filter" data-filter="open">Abiertos</button>
+                </div>
+                <div class="nc-body" id="nc-body"></div>
+                <div class="nc-footer">
+                    <button class="nc-btn" onclick="NuvemComments.startAdding()">
+                        📍 Agregar comentario
+                    </button>
+                    <button class="nc-btn" onclick="NuvemComments.shareComments()" style="margin-top: 8px; background: linear-gradient(135deg, #00965E 0%, #059669 100%);">
+                        🔗 Compartir con el equipo
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(panel);
+            
+            // Hint
+            const hint = document.createElement('div');
+            hint.className = 'nc-hint';
+            hint.textContent = '📍 Haz clic donde quieras dejar el comentario (ESC para cancelar)';
+            document.body.appendChild(hint);
+            
+            // Event listeners
+            panel.querySelectorAll('.nc-filter').forEach(btn => {
+                btn.onclick = () => {
+                    panel.querySelectorAll('.nc-filter').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.filter = btn.dataset.filter;
+                    renderComments();
+                };
+            });
+            
+            // Detect slide changes
+            observeSlideChanges();
+        }
+
+        function observeSlideChanges() {
+            // Observar el indicador de slide en la navegación
+            const observer = new MutationObserver(() => {
+                const indicator = document.querySelector('.indicator');
+                if (indicator) {
+                    const match = indicator.textContent.match(/(\d+)\s*\/\s*(\d+)/);
+                    if (match) {
+                        state.currentSlide = parseInt(match[1]);
+                        renderMarkers();
+                    }
+                }
+            });
+            
+            setTimeout(() => {
+                const nav = document.querySelector('.nav');
+                if (nav) {
+                    observer.observe(nav, { subtree: true, characterData: true, childList: true });
+                }
+            }, 500);
+        }
+
+        function askForName() {
+            if (state.userName) return;
+            
+            const modal = document.createElement('div');
+            modal.className = 'nc-modal';
+            modal.innerHTML = `
+                <div class="nc-modal-content">
+                    <h3>👋 ¡Hola!</h3>
+                    <p>¿Cómo te llamas? Así sabremos quién deja cada comentario.</p>
+                    <input type="text" id="nc-name-input" placeholder="Tu nombre..." />
+                    <button class="nc-btn" onclick="NuvemComments.saveName()">Continuar</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            setTimeout(() => document.getElementById('nc-name-input').focus(), 100);
+            
+            document.getElementById('nc-name-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') NuvemComments.saveName();
+            });
+        }
+
+        function saveName() {
+            const input = document.getElementById('nc-name-input');
+            const name = input.value.trim();
+            if (name) {
+                state.userName = name;
+                localStorage.setItem('commenter_name', name);
+                document.querySelector('.nc-modal').remove();
+            }
+        }
+
+        function togglePanel() {
+            state.panelOpen = !state.panelOpen;
+            document.getElementById('nc-panel').classList.toggle('open', state.panelOpen);
+        }
+
+        function startAdding() {
+            if (!state.userName) {
+                askForName();
+                return;
+            }
+            state.isAddingComment = true;
+            document.body.classList.add('nc-adding');
+            document.getElementById('nc-panel').classList.remove('open');
+            state.panelOpen = false;
+        }
+
+        function cancelAdding() {
+            state.isAddingComment = false;
+            document.body.classList.remove('nc-adding');
+        }
+
+        // === COMENTARIOS ===
+        // === SINCRONIZACIÓN CON BACKEND ===
+        async function syncFromCloud() {
+            if (!CONFIG.syncEnabled) return;
+            
+            try {
+                const response = await fetch(`https://api.npoint.io/${CONFIG.npointId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.comments && Array.isArray(data.comments)) {
+                        // Merge: mantener comentarios locales nuevos, actualizar los existentes
+                        const cloudIds = new Set(data.comments.map(c => c.id));
+                        const localOnly = state.comments.filter(c => !cloudIds.has(c.id));
+                        state.comments = [...data.comments, ...localOnly];
+                        localStorage.setItem(CONFIG.storageKey, JSON.stringify(state.comments));
+                        renderComments();
+                        renderMarkers();
+                        updateBadge();
+                    }
+                }
+            } catch (e) {
+                console.log('Sync read failed, using local:', e.message);
+            }
+        }
+
+        async function syncToCloud() {
+            if (!CONFIG.syncEnabled) return;
+            
+            try {
+                await fetch(`https://api.npoint.io/${CONFIG.npointId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        comments: state.comments,
+                        lastUpdate: new Date().toISOString(),
+                        presentation: CONFIG.presentationId
+                    })
+                });
+            } catch (e) {
+                console.log('Sync write failed:', e.message);
+            }
+        }
+
+        function loadComments() {
+            // Cargar local primero (rápido)
+            const saved = localStorage.getItem(CONFIG.storageKey);
+            state.comments = saved ? JSON.parse(saved) : [];
+            renderComments();
+            renderMarkers();
+            updateBadge();
+            
+            // Luego sincronizar con la nube
+            syncFromCloud();
+            
+            // Auto-sync periódico
+            if (CONFIG.syncEnabled) {
+                setInterval(syncFromCloud, CONFIG.syncInterval);
+            }
+        }
+
+        function saveComments() {
+            localStorage.setItem(CONFIG.storageKey, JSON.stringify(state.comments));
+            // Sincronizar a la nube
+            syncToCloud();
+        }
+
+        function addComment(text, x, y, slide) {
+            const comment = {
+                id: Date.now().toString(),
+                text,
+                x,
+                y,
+                slide,
+                author: state.userName,
+                color: state.userColor,
+                timestamp: new Date().toISOString(),
+                resolved: false,
+                replies: []
+            };
+            
+            state.comments.push(comment);
+            saveComments();
+            renderComments();
+            renderMarkers();
+            updateBadge();
+        }
+
+        function resolveComment(id) {
+            const comment = state.comments.find(c => c.id === id);
+            if (comment) {
+                comment.resolved = !comment.resolved;
+                saveComments();
+                renderComments();
+                renderMarkers();
+            }
+        }
+
+        function deleteComment(id) {
+            if (!confirm('¿Eliminar este comentario?')) return;
+            state.comments = state.comments.filter(c => c.id !== id);
+            saveComments();
+            renderComments();
+            renderMarkers();
+            updateBadge();
+        }
+
+        function addReply(commentId, text) {
+            const comment = state.comments.find(c => c.id === commentId);
+            if (comment) {
+                comment.replies.push({
+                    id: Date.now().toString(),
+                    text,
+                    author: state.userName,
+                    color: state.userColor,
+                    timestamp: new Date().toISOString()
+                });
+                saveComments();
+                renderComments();
+            }
+        }
+
+        function renderComments() {
+            const body = document.getElementById('nc-body');
+            if (!body) return;
+            
+            let filtered = [...state.comments];
+            
+            if (state.filter === 'slide') {
+                filtered = filtered.filter(c => c.slide === state.currentSlide);
+            } else if (state.filter === 'open') {
+                filtered = filtered.filter(c => !c.resolved);
+            }
+            
+            if (filtered.length === 0) {
+                body.innerHTML = `
+                    <div class="nc-empty">
+                        <div class="nc-empty-icon">💭</div>
+                        <p>${state.filter === 'slide' ? 'No hay comentarios en este slide' : 'No hay comentarios aún'}</p>
+                        <p style="font-size: 12px;">Haz clic en "Agregar" para dejar uno</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            body.innerHTML = filtered.map(c => `
+                <div class="nc-comment ${c.resolved ? 'resolved' : ''}" data-id="${c.id}">
+                    <div class="nc-comment-header">
+                        <div class="nc-author">
+                            <div class="nc-avatar" style="background: ${c.color}">${c.author.charAt(0).toUpperCase()}</div>
+                            <div class="nc-meta">
+                                <span class="nc-name">${escapeHtml(c.author)}</span>
+                                <span class="nc-time">${formatTime(c.timestamp)}</span>
+                            </div>
+                        </div>
+                        <span class="nc-slide-tag">Slide ${c.slide}</span>
+                    </div>
+                    <div class="nc-text">${escapeHtml(c.text)}</div>
+                    <div class="nc-actions">
+                        <button class="nc-action" onclick="NuvemComments.showReply('${c.id}')">💬 Responder</button>
+                        <button class="nc-action" onclick="NuvemComments.resolveComment('${c.id}')">${c.resolved ? '🔄 Reabrir' : '✅ Resolver'}</button>
+                        <button class="nc-action" onclick="NuvemComments.deleteComment('${c.id}')">🗑️</button>
+                    </div>
+                    ${c.replies && c.replies.length > 0 ? `
+                        <div class="nc-replies">
+                            ${c.replies.map(r => `
+                                <div class="nc-reply">
+                                    <div class="nc-author" style="margin-bottom: 6px;">
+                                        <div class="nc-avatar" style="background: ${r.color}; width: 24px; height: 24px; font-size: 10px;">${r.author.charAt(0).toUpperCase()}</div>
+                                        <div class="nc-meta">
+                                            <span class="nc-name" style="font-size: 12px;">${escapeHtml(r.author)}</span>
+                                            <span class="nc-time">${formatTime(r.timestamp)}</span>
+                                        </div>
+                                    </div>
+                                    <div class="nc-text" style="font-size: 12px; margin: 0;">${escapeHtml(r.text)}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    <div id="reply-${c.id}" style="display: none; margin-top: 10px;">
+                        <textarea class="nc-input" placeholder="Tu respuesta..." rows="2"></textarea>
+                        <div style="display: flex; gap: 8px; margin-top: 8px;">
+                            <button class="nc-btn" style="padding: 8px 16px; font-size: 12px;" onclick="NuvemComments.submitReply('${c.id}')">Enviar</button>
+                            <button class="nc-action" onclick="document.getElementById('reply-${c.id}').style.display='none'">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showReply(commentId) {
+            document.querySelectorAll('[id^="reply-"]').forEach(el => el.style.display = 'none');
+            const el = document.getElementById(`reply-${commentId}`);
+            if (el) {
+                el.style.display = 'block';
+                el.querySelector('textarea').focus();
+            }
+        }
+
+        function submitReply(commentId) {
+            const el = document.getElementById(`reply-${commentId}`);
+            const text = el.querySelector('textarea').value.trim();
+            if (text) {
+                addReply(commentId, text);
+                el.style.display = 'none';
+            }
+        }
+
+        function renderMarkers() {
+            document.querySelectorAll('.nc-marker').forEach(m => m.remove());
+            
+            const slideComments = state.comments.filter(c => c.slide === state.currentSlide && !c.resolved);
+            const slideEl = document.querySelector('.slide');
+            
+            if (!slideEl) return;
+            
+            slideEl.style.position = 'relative';
+            
+            slideComments.forEach((c, i) => {
+                const marker = document.createElement('div');
+                marker.className = `nc-marker ${c.resolved ? 'resolved' : ''}`;
+                marker.textContent = i + 1;
+                marker.style.left = `${c.x}%`;
+                marker.style.top = `${c.y}%`;
+                marker.title = `${c.author}: ${c.text.substring(0, 40)}...`;
+                marker.onclick = (e) => {
+                    e.stopPropagation();
+                    state.panelOpen = true;
+                    document.getElementById('nc-panel').classList.add('open');
+                };
+                slideEl.appendChild(marker);
+            });
+        }
+
+        function updateBadge() {
+            const badge = document.querySelector('.nc-badge');
+            const count = state.comments.filter(c => !c.resolved).length;
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'block' : 'none';
+            }
+        }
+
+        function showCommentPopup(x, y, slide) {
+            const popup = document.createElement('div');
+            popup.className = 'nc-popup';
+            popup.style.left = `${Math.min(x, window.innerWidth - 340)}px`;
+            popup.style.top = `${Math.min(y, window.innerHeight - 220)}px`;
+            popup.innerHTML = `
+                <div style="font-weight: 600; margin-bottom: 12px; color: #010B23;">
+                    💬 Nuevo comentario - Slide ${slide}
+                </div>
+                <textarea class="nc-input" placeholder="Escribe tu comentario..." rows="3"></textarea>
+                <div style="display: flex; gap: 10px; margin-top: 12px;">
+                    <button class="nc-btn" style="flex: 1;" id="nc-submit">Publicar</button>
+                    <button class="nc-action" style="padding: 12px 16px; background: #F3F4F6;" id="nc-cancel">Cancelar</button>
+                </div>
+            `;
+            document.body.appendChild(popup);
+            
+            const textarea = popup.querySelector('textarea');
+            setTimeout(() => textarea.focus(), 50);
+            
+            popup.querySelector('#nc-submit').onclick = () => {
+                const text = textarea.value.trim();
+                if (text) {
+                    addComment(text, popup._x, popup._y, slide);
+                    popup.remove();
+                }
+            };
+            
+            popup.querySelector('#nc-cancel').onclick = () => popup.remove();
+            
+            textarea.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                    popup.querySelector('#nc-submit').click();
+                }
+            });
+            
+            return popup;
+        }
+
+        // === UTILS ===
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'Ahora';
+            if (diff < 3600000) return `Hace ${Math.floor(diff / 60000)} min`;
+            if (diff < 86400000) return `Hace ${Math.floor(diff / 3600000)}h`;
+            
+            return date.toLocaleDateString('es', { day: 'numeric', month: 'short' });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // === EVENTOS GLOBALES ===
+        document.addEventListener('click', (e) => {
+            if (!state.isAddingComment) return;
+            
+            if (e.target.closest('.nc-panel') || 
+                e.target.closest('.nc-toggle') ||
+                e.target.closest('.nc-marker') ||
+                e.target.closest('.nc-popup')) {
+                return;
+            }
+            
+            const slideEl = document.querySelector('.slide');
+            if (!slideEl) return;
+            
+            const rect = slideEl.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+            const y = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
+            
+            cancelAdding();
+            
+            const popup = showCommentPopup(e.clientX, e.clientY, state.currentSlide);
+            popup._x = x;
+            popup._y = y;
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && state.isAddingComment) {
+                cancelAdding();
+            }
+        });
+
+        // === INIT ===
+        function init() {
+            injectStyles();
+            createUI();
+            loadComments();
+            
+            // Detectar slide inicial
+            setTimeout(() => {
+                const indicator = document.querySelector('.indicator');
+                if (indicator) {
+                    const match = indicator.textContent.match(/(\d+)\s*\/\s*(\d+)/);
+                    if (match) state.currentSlide = parseInt(match[1]);
+                }
+                renderMarkers();
+            }, 500);
+        }
+
+        // Esperar a que cargue
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+        // === COMPARTIR VIA URL ===
+        function shareComments() {
+            const data = btoa(encodeURIComponent(JSON.stringify(state.comments)));
+            const url = `${window.location.origin}${window.location.pathname}?comments=${data}`;
+            
+            // Copiar al clipboard
+            navigator.clipboard.writeText(url).then(() => {
+                showNotification('✅ Link copiado! Compártelo con tu equipo');
+            }).catch(() => {
+                prompt('Copia este link:', url);
+            });
+        }
+
+        function loadFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const data = params.get('comments');
+            if (data) {
+                try {
+                    const comments = JSON.parse(decodeURIComponent(atob(data)));
+                    if (Array.isArray(comments)) {
+                        // Merge con existentes
+                        const existingIds = new Set(state.comments.map(c => c.id));
+                        const newComments = comments.filter(c => !existingIds.has(c.id));
+                        if (newComments.length > 0) {
+                            state.comments = [...state.comments, ...newComments];
+                            saveComments();
+                            showNotification(`📥 ${newComments.length} comentarios importados`);
+                        }
+                    }
+                    // Limpiar URL
+                    window.history.replaceState({}, '', window.location.pathname);
+                } catch (e) {
+                    console.log('Error loading comments from URL');
+                }
+            }
+        }
+
+        function showNotification(message) {
+            const notif = document.createElement('div');
+            notif.style.cssText = `
+                position: fixed;
+                bottom: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #010B23;
+                color: white;
+                padding: 14px 24px;
+                border-radius: 10px;
+                font-size: 14px;
+                z-index: 10005;
+                box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+                animation: slideUp 0.3s ease;
+            `;
+            notif.textContent = message;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3500);
+        }
+
+        // Agregar estilos de animación
+        const animStyle = document.createElement('style');
+        animStyle.textContent = `@keyframes slideUp { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }`;
+        document.head.appendChild(animStyle);
+
+        // API pública
+        window.NuvemComments = {
+            togglePanel,
+            startAdding,
+            saveName,
+            resolveComment,
+            deleteComment,
+            showReply,
+            submitReply,
+            shareComments,
+            exportComments: () => JSON.stringify(state.comments, null, 2),
+            importComments: (json) => {
+                try {
+                    const imported = JSON.parse(json);
+                    const existingIds = new Set(state.comments.map(c => c.id));
+                    const newComments = imported.filter(c => !existingIds.has(c.id));
+                    state.comments = [...state.comments, ...newComments];
+                    saveComments();
+                    renderComments();
+                    renderMarkers();
+                    updateBadge();
+                    showNotification(`✅ ${newComments.length} comentarios importados`);
+                } catch (e) {
+                    alert('Error al importar');
+                }
+            },
+            clearAll: () => {
+                if (confirm('¿Eliminar TODOS los comentarios?')) {
+                    state.comments = [];
+                    saveComments();
+                    renderComments();
+                    renderMarkers();
+                    updateBadge();
+                }
+            }
+        };
+
+        // Cargar comentarios desde URL si existen
+        setTimeout(loadFromUrl, 100);
+    })();
+    </script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<!-- Sistema de Comentarios con Firebase + Auth -->
+<script>
+// Configuración Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBhrC9gzxfJrf-8_r0X3KpF8_PW0MgB3Gg",
+  authDomain: "reports-ai-b02e8.firebaseapp.com",
+  databaseURL: "https://reports-ai-b02e8-default-rtdb.firebaseio.com",
+  projectId: "reports-ai-b02e8",
+  storageBucket: "reports-ai-b02e8.firebasestorage.app",
+  messagingSenderId: "497102969122",
+  appId: "1:497102969122:web:921daf9a64b9dacef0ed7b"
+};
+
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const auth = firebase.auth();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+// Agregar scope para obtener foto de perfil
+googleProvider.addScope('profile');
+googleProvider.addScope('email');
+
+// Dominios permitidos
+const ALLOWED_DOMAINS = ['tiendanube.com', 'nuvemshop.com'];
+
+// ============================================
+// BLOQUEO DE ACCESO - Solo emails autorizados
+// ============================================
+
+// Variables globales de usuario autenticado
+let currentUser = null;
+
+function grantAccess(user) {
+  currentUser = {
+    name: user.displayName || user.email.split('@')[0],
+    email: user.email,
+    photo: user.photoURL
+  };
+  document.body.classList.add('authenticated');
+  const overlay = document.getElementById('auth-overlay');
+  if (overlay) {
+    overlay.style.transition = 'opacity 0.5s';
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.style.display = 'none', 500);
+  }
+  console.log('✅ Acceso autorizado:', currentUser.email);
+}
+
+function denyAccess(email) {
+  currentUser = null;
+  document.body.classList.remove('authenticated');
+  const overlay = document.getElementById('auth-overlay');
+  if (overlay) overlay.style.display = 'flex';
+  
+  document.getElementById('login-loading').style.display = 'none';
+  document.getElementById('google-login-btn').style.display = 'flex';
+  document.getElementById('login-error').style.display = 'block';
+  document.getElementById('error-email').textContent = email;
+}
+
+function doGoogleLogin() {
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-loading').style.display = 'block';
+  document.getElementById('google-login-btn').style.display = 'none';
+  
+  auth.signInWithPopup(googleProvider)
+    .catch((error) => {
+      console.error('Login error:', error);
+      document.getElementById('login-loading').style.display = 'none';
+      document.getElementById('google-login-btn').style.display = 'flex';
+      if (error.code !== 'auth/popup-closed-by-user') {
+        document.getElementById('login-error').style.display = 'block';
+        document.getElementById('error-email').textContent = 'Error: ' + error.message;
+      }
+    });
+}
+
+// Verificar autenticación al cargar
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    const email = user.email;
+    const domain = email.split('@')[1];
+    
+    if (ALLOWED_DOMAINS.includes(domain)) {
+      grantAccess(user);
+    } else {
+      console.log('❌ Dominio no autorizado:', domain);
+      auth.signOut();
+      denyAccess(email);
+    }
+  } else {
+    currentUser = null;
+    document.body.classList.remove('authenticated');
+  }
+});
+
+// Conectar botón de login cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => {
+  const loginBtn = document.getElementById('google-login-btn');
+  if (loginBtn) {
+    loginBtn.onclick = doGoogleLogin;
+  }
+});
+
+class SlideComments {
+  constructor(options = {}) {
+    this.presentationId = options.presentationId || 'nuvemchat-nov-2025';
+    this.userColor = this.getRandomColor();
+    this.comments = {};
+    this.init();
+  }
+  
+  get userName() {
+    return currentUser ? currentUser.name : null;
+  }
+  
+  get userEmail() {
+    return currentUser ? currentUser.email : null;
+  }
+  
+  get userPhoto() {
+    return currentUser ? currentUser.photo : null;
+  }
+  
+  get isAuthenticated() {
+    return !!currentUser;
+  }
+
+  init() {
+    this.injectStyles();
+    this.createUI();
+    this.loadComments();
+    this.bindEvents();
+    
+    // Actualizar UI de auth cuando cambie el estado
+    auth.onAuthStateChanged(() => {
+      this.updateAuthUI();
+    });
+  }
+
+  getRandomColor() {
+    const colors = ['#59A9FF', '#00965E', '#FF7A27', '#EC3F41', '#8B5CF6', '#EC4899', '#14B8A6'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  injectStyles() {
+    if (document.getElementById('slide-comments-styles')) return;
+    const styles = document.createElement('style');
+    styles.id = 'slide-comments-styles';
+    styles.textContent = `
+      .comments-panel{position:fixed;right:-400px;top:0;width:380px;height:100vh;background:#fff;box-shadow:-4px 0 20px rgba(0,0,0,0.15);z-index:10000;transition:right 0.3s ease;display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+      .comments-panel.open{right:0}
+      .comments-panel-header{padding:16px 20px;background:#010B23;color:white;display:flex;justify-content:space-between;align-items:center}
+      .comments-panel-header h3{margin:0;font-size:16px;font-weight:600}
+      .comments-panel-close{background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:0;line-height:1}
+      .comments-panel-body{flex:1;overflow-y:auto;padding:16px}
+      .comments-panel-footer{padding:16px;border-top:1px solid #E5E7EB;background:#F9FAFB}
+      .comments-toggle{position:fixed;right:20px;top:20px;width:50px;height:50px;border-radius:50%;background:#010B23;color:white;border:none;cursor:pointer;z-index:9999;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 12px rgba(0,0,0,0.3);transition:transform 0.2s,background 0.2s}
+      .comments-toggle:hover{transform:scale(1.1);background:#59A9FF}
+      .comments-toggle .badge{position:absolute;top:-5px;right:-5px;background:#EC3F41;color:white;font-size:11px;font-weight:bold;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center}
+      .comment-item{background:#F9FAFB;border-radius:12px;padding:14px;margin-bottom:12px;border-left:4px solid #59A9FF;transition:all 0.2s}
+      .comment-item:hover{background:#EFF6FF}
+      .comment-item.resolved{border-left-color:#00965E;opacity:0.7}
+      .comment-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+      .comment-author{display:flex;align-items:center;gap:8px}
+      .comment-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:14px}
+      .comment-meta{display:flex;flex-direction:column}
+      .comment-name{font-weight:600;color:#010B23;font-size:14px}
+      .comment-time{font-size:11px;color:#9CA3AF}
+      .comment-slide-badge{background:#E5E7EB;color:#6B7280;font-size:11px;padding:2px 8px;border-radius:4px}
+      .comment-text{color:#374151;font-size:14px;line-height:1.5;margin-bottom:10px}
+      .comment-actions{display:flex;gap:8px}
+      .comment-action-btn{background:none;border:none;color:#6B7280;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:4px;transition:all 0.2s}
+      .comment-action-btn:hover{background:#E5E7EB;color:#010B23}
+      .comment-replies{margin-top:12px;padding-left:16px;border-left:2px solid #E5E7EB}
+      .reply-item{padding:10px;background:white;border-radius:8px;margin-bottom:8px}
+      .new-comment-input{width:100%;padding:12px;border:2px solid #E5E7EB;border-radius:8px;font-size:14px;resize:none;transition:border-color 0.2s;font-family:inherit;box-sizing:border-box}
+      .new-comment-input:focus{outline:none;border-color:#59A9FF}
+      .new-comment-submit{background:#59A9FF;color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer;transition:background 0.2s}
+      .new-comment-submit:hover{background:#3B82F6}
+      .comments-filter{display:flex;gap:8px;padding:12px 16px;border-bottom:1px solid #E5E7EB;background:#F9FAFB}
+      .filter-tab{padding:6px 12px;border-radius:6px;font-size:13px;cursor:pointer;background:none;border:none;color:#6B7280;transition:all 0.2s}
+      .filter-tab:hover{background:#E5E7EB}
+      .filter-tab.active{background:#010B23;color:white}
+      .comments-empty{text-align:center;padding:40px 20px;color:#9CA3AF}
+      .comments-empty-icon{font-size:48px;margin-bottom:16px}
+      .name-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10002}
+      .name-modal-content{background:white;padding:30px;border-radius:16px;max-width:400px;width:90%;text-align:center}
+      .name-modal h3{margin:0 0 10px;color:#010B23}
+      .name-modal p{color:#6B7280;margin-bottom:20px}
+      .name-modal input{width:100%;padding:12px;border:2px solid #E5E7EB;border-radius:8px;font-size:16px;margin-bottom:16px;box-sizing:border-box}
+      .name-modal button{background:#59A9FF;color:white;border:none;padding:12px 30px;border-radius:8px;font-weight:600;cursor:pointer;font-size:16px}
+      @media(max-width:768px){.comments-panel{width:100%;right:-100%}}
+    `;
+    document.head.appendChild(styles);
+  }
+
+  createUI() {
+    const toggle = document.createElement('button');
+    toggle.className = 'comments-toggle';
+    toggle.innerHTML = '💬 <span class="badge" style="display:none;">0</span>';
+    toggle.onclick = () => this.togglePanel();
+    document.body.appendChild(toggle);
+    this.toggleBtn = toggle;
+
+    const panel = document.createElement('div');
+    panel.className = 'comments-panel';
+    panel.innerHTML = `
+      <div class="comments-panel-header"><h3>💬 Comentarios</h3><button class="comments-panel-close">&times;</button></div>
+      <div id="auth-status" style="padding:0 12px"></div>
+      <div class="comments-filter">
+        <button class="filter-tab active" data-filter="all">Todos</button>
+        <button class="filter-tab" data-filter="slide">Este slide</button>
+        <button class="filter-tab" data-filter="open">Abiertos</button>
+        <button class="filter-tab" data-filter="resolved">Cerrados</button>
+      </div>
+      <div class="comments-panel-body">
+        <div class="comments-empty"><div class="comments-empty-icon">💭</div><p>No hay comentarios aún</p><p style="font-size:12px">Doble click en el slide para comentar</p></div>
+      </div>
+      <div class="comments-panel-footer"><button class="new-comment-submit" id="add-comment-btn" style="width:100%">➕ Agregar comentario</button></div>
+    `;
+    document.body.appendChild(panel);
+    this.panel = panel;
+    
+    // Actualizar UI de auth después de crear el panel
+    setTimeout(() => this.updateAuthUI(), 100);
+
+    panel.querySelector('.comments-panel-close').onclick = () => this.togglePanel();
+    panel.querySelector('#add-comment-btn').onclick = () => this.startAddingComment();
+    panel.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.onclick = (e) => {
+        panel.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        e.target.classList.add('active');
+        this.renderComments(e.target.dataset.filter);
+      };
+    });
+    
+    // Tooltip de ayuda
+    const helpTip = document.createElement('div');
+    helpTip.style.cssText = 'position:fixed;bottom:80px;left:20px;background:#010B23;color:#9CA3AF;padding:8px 12px;border-radius:6px;font-size:11px;z-index:9998;opacity:0.9';
+    helpTip.innerHTML = '💡 <b style="color:white">Doble click</b> en cualquier lugar para comentar';
+    document.body.appendChild(helpTip);
+    setTimeout(() => { helpTip.style.transition = 'opacity 0.5s'; helpTip.style.opacity = '0'; setTimeout(() => helpTip.remove(), 500); }, 6000);
+  }
+
+  loginWithGoogle() {
+    auth.signInWithPopup(googleProvider)
+      .then((result) => {
+        console.log('🔐 Login exitoso');
+      })
+      .catch((error) => {
+        console.error('❌ Error en login:', error);
+        if (error.code !== 'auth/popup-closed-by-user') {
+          alert('Error al iniciar sesión: ' + error.message);
+        }
+      });
+  }
+  
+  logout() {
+    auth.signOut().then(() => {
+      console.log('👋 Sesión cerrada');
+    });
+  }
+  
+  updateAuthUI() {
+    const authContainer = document.getElementById('auth-status');
+    if (!authContainer) return;
+    
+    if (this.isAuthenticated) {
+      authContainer.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#ECFDF5;border-radius:8px;margin-bottom:8px">
+          ${this.userPhoto ? `<img src="${this.userPhoto}" style="width:24px;height:24px;border-radius:50%">` : `<div style="width:24px;height:24px;border-radius:50%;background:${this.userColor};display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:bold">${this.userName.charAt(0).toUpperCase()}</div>`}
+          <span style="font-size:12px;color:#00965E;font-weight:500">${this.userName}</span>
+          <button onclick="slideComments.logout()" style="margin-left:auto;background:none;border:none;color:#6B7280;font-size:11px;cursor:pointer">Salir</button>
+        </div>
+      `;
+    } else {
+      authContainer.innerHTML = `
+        <button onclick="slideComments.loginWithGoogle()" style="width:100%;padding:10px;background:#fff;border:2px solid #E5E7EB;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:500;margin-bottom:8px">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Iniciar sesión con Google
+        </button>
+        <p style="font-size:10px;color:#9CA3AF;text-align:center;margin:0">Solo @tiendanube.com / @nuvemshop.com</p>
+      `;
+    }
+  }
+  
+  requireAuth() {
+    if (!this.isAuthenticated) {
+      const modal = document.createElement('div');
+      modal.className = 'name-modal';
+      modal.innerHTML = `
+        <div class="name-modal-content">
+          <h3>🔐 Inicia sesión para comentar</h3>
+          <p>Solo usuarios de Tiendanube/Nuvemshop pueden dejar comentarios.</p>
+          <button onclick="slideComments.loginWithGoogle(); this.closest('.name-modal').remove();" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Iniciar sesión con Google
+          </button>
+          <button onclick="this.closest('.name-modal').remove()" style="margin-top:8px;background:#f3f4f6;color:#6B7280">Cancelar</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      return false;
+    }
+    return true;
+  }
+
+  togglePanel() { this.panel.classList.toggle('open'); }
+  
+  startAddingComment() {
+    alert('💡 Hacé doble click en cualquier parte del slide para dejar un comentario');
+    this.panel.classList.remove('open');
+  }
+
+  bindEvents() {
+    // DOBLE CLICK en cualquier lugar para comentar
+    document.addEventListener('dblclick', (e) => {
+      // Excluir: panel de comentarios, toggle, popup, modal de nombre, botones de navegación
+      if (e.target.closest('.comments-panel') || 
+          e.target.closest('.comments-toggle') || 
+          e.target.closest('.comment-popup') || 
+          e.target.closest('.name-modal') ||
+          e.target.closest('.nav') ||
+          e.target.closest('.btn') ||
+          e.target.closest('button')) return;
+      this.openCommentPopup(e);
+    });
+    
+    document.addEventListener('keydown', (e) => { 
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.comment-popup').forEach(p => p.remove());
+      }
+    });
+  }
+  
+  openCommentPopup(e) {
+    document.querySelectorAll('.comment-popup').forEach(p => p.remove());
+    
+    const slide = this.detectCurrentSlide();
+    const rect = document.querySelector('.container')?.getBoundingClientRect() || document.body.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+    const y = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
+    
+    this.showCommentInput(e.clientX, e.clientY, { x, y, slide });
+  }
+
+  detectCurrentSlide() {
+    const indicator = document.querySelector('.indicator');
+    if (indicator) {
+      const match = indicator.textContent.match(/(\d+)/);
+      if (match) return parseInt(match[1]);
+    }
+    return 1;
+  }
+
+  showCommentInput(screenX, screenY, position) {
+    const popup = document.createElement('div');
+    popup.className = 'comment-popup';
+    popup.style.cssText = `position:fixed;left:${Math.min(screenX,window.innerWidth-320)}px;top:${Math.min(screenY,window.innerHeight-220)}px;background:white;padding:16px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.25);z-index:10003;width:300px`;
+    popup.innerHTML = `
+      <div style="margin-bottom:8px;font-size:12px;color:#6B7280">📍 Slide ${position.slide}</div>
+      <textarea class="new-comment-input" placeholder="Escribe tu comentario..." rows="3"></textarea>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="new-comment-submit" style="flex:1">Publicar</button>
+        <button class="comment-action-btn" style="padding:10px 16px;background:#f3f4f6">Cancelar</button>
+      </div>
+    `;
+    document.body.appendChild(popup);
+    const textarea = popup.querySelector('textarea');
+    const submitBtn = popup.querySelector('.new-comment-submit');
+    const cancelBtn = popup.querySelector('.comment-action-btn');
+    
+    setTimeout(() => textarea.focus(), 50);
+    
+    submitBtn.onclick = () => {
+      const text = textarea.value.trim();
+      if (text) {
+        this.addComment({ text, x: position.x, y: position.y, slide: position.slide });
+        popup.remove();
+      } else {
+        textarea.style.borderColor = '#EC3F41';
+        textarea.placeholder = '⚠️ Escribe algo...';
+      }
+    };
+    cancelBtn.onclick = () => popup.remove();
+    textarea.addEventListener('keydown', (e) => { 
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submitBtn.click();
+      if (e.key === 'Escape') popup.remove();
+    });
+  }
+
+  addComment({ text, x, y, slide }) {
+    if (!this.requireAuth()) return;
+    
+    // Debug: verificar datos del usuario
+    console.log('📸 Datos del usuario:', {
+      userName: this.userName,
+      userEmail: this.userEmail,
+      userPhoto: this.userPhoto,
+      currentUser: currentUser
+    });
+    
+    const comment = { 
+      id: Date.now().toString(), 
+      text, 
+      x, 
+      y, 
+      slide, 
+      author: this.userName, 
+      email: this.userEmail, 
+      photo: currentUser?.photo || this.userPhoto, // Usar directamente currentUser
+      color: this.userColor, 
+      timestamp: new Date().toISOString(), 
+      resolved: false, 
+      replies: [] 
+    };
+    
+    console.log('💾 Guardando comentario con foto:', comment.photo);
+    const comments = this.comments[this.presentationId] || [];
+    comments.push(comment);
+    this.comments[this.presentationId] = comments;
+    this.saveComments();
+  }
+
+  addReply(commentId, text) {
+    console.log('📨 addReply llamado:', commentId, text);
+    if (!this.requireAuth()) { 
+      console.log('⚠️ No autenticado');
+      return; 
+    }
+    const comments = this.comments[this.presentationId] || [];
+    const comment = comments.find(c => c.id === commentId);
+    console.log('🔍 Comentario encontrado:', comment);
+    
+    if (comment) {
+      console.log('✅ Agregando respuesta al comentario');
+      // Asegurar que replies existe como array
+      if (!comment.replies || !Array.isArray(comment.replies)) {
+        comment.replies = [];
+      }
+      
+      const newReply = { 
+        id: Date.now().toString(), 
+        text: text, 
+        author: this.userName,
+        email: this.userEmail,
+        photo: currentUser?.photo || this.userPhoto, // Usar directamente currentUser
+        color: this.userColor, 
+        timestamp: new Date().toISOString() 
+      };
+      console.log('📝 Nueva respuesta:', newReply);
+      
+      comment.replies.push(newReply);
+      this.saveComments();
+      // Re-renderizar para mostrar la respuesta
+      this.renderComments();
+    } else {
+      console.log('❌ No se encontró el comentario:', commentId);
+    }
+  }
+
+  resolveComment(commentId) {
+    const comments = this.comments[this.presentationId] || [];
+    const comment = comments.find(c => c.id === commentId);
+    if (comment) { comment.resolved = !comment.resolved; this.saveComments(); }
+  }
+
+  deleteComment(commentId) {
+    if (!confirm('¿Eliminar este comentario?')) return;
+    const comments = this.comments[this.presentationId] || [];
+    const index = comments.findIndex(c => c.id === commentId);
+    if (index > -1) { comments.splice(index, 1); this.saveComments(); }
+  }
+
+  saveComments() {
+    const commentsArray = this.comments[this.presentationId] || [];
+    database.ref(`presentations/${this.presentationId}/comments`).set(commentsArray);
+  }
+  
+  loadComments() {
+    const ref = database.ref(`presentations/${this.presentationId}/comments`);
+    ref.on('value', (snapshot) => {
+      const data = snapshot.val();
+      this.comments[this.presentationId] = data || [];
+      this.renderComments();
+      this.updateBadge();
+    });
+  }
+
+  renderComments(filter = 'all') {
+    const container = this.panel.querySelector('.comments-panel-body');
+    const comments = this.comments[this.presentationId] || [];
+    let filtered = comments;
+    let emptyMessage = 'No hay comentarios aún';
+    
+    if (filter === 'slide') {
+      filtered = comments.filter(c => c.slide === this.detectCurrentSlide());
+      emptyMessage = 'No hay comentarios en este slide';
+    } else if (filter === 'open') {
+      filtered = comments.filter(c => !c.resolved);
+      emptyMessage = 'No hay comentarios abiertos';
+    } else if (filter === 'resolved') {
+      filtered = comments.filter(c => c.resolved);
+      emptyMessage = 'No hay comentarios cerrados';
+    }
+    
+    if (filtered.length === 0) {
+      container.innerHTML = `<div class="comments-empty"><div class="comments-empty-icon">${filter === 'resolved' ? '✅' : '💭'}</div><p>${emptyMessage}</p><p style="font-size:12px">${filter === 'resolved' ? 'Los comentarios resueltos aparecerán aquí' : 'Doble click en el slide para comentar'}</p></div>`;
+      return;
+    }
+    filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    container.innerHTML = filtered.map(comment => `
+      <div class="comment-item ${comment.resolved ? 'resolved' : ''}" data-id="${comment.id}">
+        <div class="comment-header">
+          <div class="comment-author">
+            ${comment.photo 
+              ? `<img src="${comment.photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+              : ''
+            }
+            <div class="comment-avatar" style="background:${comment.color};${comment.photo ? 'display:none' : ''}">${comment.author ? comment.author.charAt(0).toUpperCase() : '?'}</div>
+            <div class="comment-meta">
+              <span class="comment-name">${comment.author || 'Anónimo'}</span>
+              ${comment.email ? `<span style="font-size:11px;color:#6B7280;display:block;margin-top:1px">${comment.email}</span>` : ''}
+              <span class="comment-time" style="display:block;margin-top:2px">${this.formatTime(comment.timestamp)}</span>
+            </div>
+          </div>
+          <span class="comment-slide-badge">Slide ${comment.slide}</span>
+        </div>
+        <div class="comment-text">${this.escapeHtml(comment.text)}</div>
+        <div class="comment-actions">
+          <button class="comment-action-btn" onclick="slideComments.goToComment('${comment.id}')" style="color:#59A9FF;font-weight:600">📍 Ir</button>
+          <button class="comment-action-btn" onclick="slideComments.showReplyInput('${comment.id}')">💬 Responder</button>
+          <button class="comment-action-btn" onclick="slideComments.resolveComment('${comment.id}')">${comment.resolved ? '🔄 Reabrir' : '✓ Resolver'}</button>
+          <button class="comment-action-btn" onclick="slideComments.deleteComment('${comment.id}')">🗑</button>
+        </div>
+        ${comment.replies && comment.replies.length > 0 ? `<div class="comment-replies">${comment.replies.map(reply => `
+          <div class="reply-item">
+            <div class="comment-author" style="margin-bottom:6px">
+              ${reply.photo 
+                ? `<img src="${reply.photo}" style="width:24px;height:24px;border-radius:50%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                : ''
+              }
+              <div class="comment-avatar" style="background:${reply.color};width:24px;height:24px;font-size:11px;${reply.photo ? 'display:none' : ''}">${reply.author ? reply.author.charAt(0).toUpperCase() : '?'}</div>
+              <div class="comment-meta">
+                <span class="comment-name" style="font-size:13px">${reply.author || 'Anónimo'}</span>
+                ${reply.email ? `<span style="font-size:10px;color:#6B7280;display:block">${reply.email}</span>` : ''}
+                <span class="comment-time">${this.formatTime(reply.timestamp)}</span>
+              </div>
+            </div>
+            <div class="comment-text" style="font-size:13px;margin:0">${this.escapeHtml(reply.text)}</div>
+          </div>
+        `).join('')}</div>` : ''}
+        <div class="reply-input-container" id="reply-${comment.id}" style="display:none;margin-top:12px">
+          <textarea class="new-comment-input" placeholder="Escribe tu respuesta..." rows="2"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="new-comment-submit" style="font-size:13px;padding:8px 16px">Responder</button>
+            <button class="comment-action-btn" style="background:#f3f4f6" onclick="document.getElementById('reply-${comment.id}').style.display='none'">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    const self = this;
+    container.querySelectorAll('.reply-input-container').forEach(el => {
+      const btn = el.querySelector('.new-comment-submit');
+      const textarea = el.querySelector('textarea');
+      const commentId = el.id.replace('reply-', '');
+      btn.onclick = () => { 
+        const text = textarea.value.trim(); 
+        if (text) { 
+          console.log('💬 Enviando respuesta:', text, 'a comentario:', commentId);
+          self.addReply(commentId, text); 
+          el.style.display = 'none'; 
+          textarea.value = ''; 
+        } else {
+          textarea.style.borderColor = '#EC3F41';
+          textarea.placeholder = '⚠️ Escribe algo...';
+        }
+      };
+      // También permitir enviar con Cmd+Enter
+      textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+          btn.click();
+        }
+      });
+    });
+  }
+
+  showReplyInput(commentId) {
+    console.log('📝 Mostrando input para responder a:', commentId);
+    const container = document.getElementById(`reply-${commentId}`);
+    if (container) { 
+      container.style.display = 'block'; 
+      const textarea = container.querySelector('textarea');
+      if (textarea) {
+        textarea.style.borderColor = '#E5E7EB';
+        textarea.placeholder = 'Escribe tu respuesta...';
+        setTimeout(() => textarea.focus(), 50);
+      }
+    } else {
+      console.log('⚠️ No se encontró container para:', commentId);
+    }
+  }
+
+  goToComment(commentId) {
+    const comments = this.comments[this.presentationId] || [];
+    const comment = comments.find(c => c.id === commentId);
+    if (!comment) return;
+    
+    // Navegar al slide correcto
+    const targetSlide = comment.slide;
+    const currentSlide = this.detectCurrentSlide();
+    
+    if (targetSlide !== currentSlide) {
+      // Simular clicks en los botones de navegación
+      const diff = targetSlide - currentSlide;
+      const btn = diff > 0 
+        ? document.querySelector('.btn:last-child') // Siguiente
+        : document.querySelector('.btn:first-child'); // Anterior
+      
+      if (btn) {
+        for (let i = 0; i < Math.abs(diff); i++) {
+          setTimeout(() => btn.click(), i * 100);
+        }
+      }
+    }
+    
+    // Mostrar marcador visual en la posición del comentario
+    setTimeout(() => {
+      this.showCommentMarker(comment);
+    }, Math.abs(targetSlide - currentSlide) * 100 + 200);
+    
+    // Cerrar panel
+    this.panel.classList.remove('open');
+  }
+  
+  showCommentMarker(comment) {
+    // Eliminar marcadores anteriores
+    document.querySelectorAll('.comment-position-marker').forEach(m => m.remove());
+    
+    // Crear marcador visual
+    const marker = document.createElement('div');
+    marker.className = 'comment-position-marker';
+    marker.style.cssText = `
+      position: fixed;
+      left: ${comment.x}%;
+      top: ${comment.y}%;
+      width: 40px;
+      height: 40px;
+      background: #59A9FF;
+      border: 3px solid white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 4px 20px rgba(89,169,255,0.6);
+      z-index: 9998;
+      animation: pulseMarker 1.5s ease-in-out infinite;
+      cursor: pointer;
+    `;
+    marker.innerHTML = '💬';
+    marker.title = `Click para ver el comentario de ${comment.author}`;
+    
+    // Al hacer click, abrir panel y mostrar el comentario específico
+    const self = this;
+    marker.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('🎯 Click en marcador, abriendo comentario:', comment.id);
+      self.openCommentInPanel(comment.id);
+      marker.remove();
+    };
+    
+    // Agregar animación
+    if (!document.getElementById('marker-animation')) {
+      const style = document.createElement('style');
+      style.id = 'marker-animation';
+      style.textContent = `
+        @keyframes pulseMarker {
+          0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(89,169,255,0.6); }
+          50% { transform: scale(1.2); box-shadow: 0 4px 30px rgba(89,169,255,0.9); }
+        }
+        .comment-item.highlighted {
+          background: #DBEAFE !important;
+          border-left-color: #2563EB !important;
+          animation: highlightPulse 2s ease-in-out;
+        }
+        @keyframes highlightPulse {
+          0%, 100% { box-shadow: none; }
+          50% { box-shadow: 0 0 20px rgba(89,169,255,0.5); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(marker);
+    
+    // Eliminar después de 8 segundos si no se clickea
+    setTimeout(() => {
+      if (document.body.contains(marker)) {
+        marker.style.transition = 'opacity 0.5s';
+        marker.style.opacity = '0';
+        setTimeout(() => marker.remove(), 500);
+      }
+    }, 8000);
+  }
+  
+  openCommentInPanel(commentId) {
+    console.log('📂 Abriendo panel para comentario:', commentId);
+    
+    // Abrir panel
+    this.panel.classList.add('open');
+    
+    // Esperar un poco para que el panel se abra
+    setTimeout(() => {
+      // Buscar el comentario en el panel
+      const commentEl = this.panel.querySelector(`[data-id="${commentId}"]`);
+      console.log('🔍 Elemento encontrado:', commentEl);
+      
+      if (commentEl) {
+        // Scroll al comentario
+        commentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Resaltar el comentario
+        commentEl.classList.add('highlighted');
+        setTimeout(() => commentEl.classList.remove('highlighted'), 3000);
+      } else {
+        console.log('⚠️ No se encontró el comentario con id:', commentId);
+      }
+    }, 300);
+  }
+
+  updateBadge() {
+    const comments = this.comments[this.presentationId] || [];
+    const openCount = comments.filter(c => !c.resolved).length;
+    const badge = this.toggleBtn.querySelector('.badge');
+    if (openCount > 0) { badge.textContent = openCount; badge.style.display = 'block'; }
+    else { badge.style.display = 'none'; }
+  }
+
+  formatTime(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+    if (diff < 60000) return 'Ahora';
+    if (diff < 3600000) return `Hace ${Math.floor(diff / 60000)} min`;
+    if (diff < 86400000) return `Hace ${Math.floor(diff / 3600000)}h`;
+    return date.toLocaleDateString('es', { day: 'numeric', month: 'short' });
+  }
+
+  escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+}
+
+let slideComments;
+document.addEventListener('DOMContentLoaded', () => { 
+  console.log('🚀 Iniciando sistema de comentarios...');
+  try {
+    slideComments = new SlideComments({ presentationId: 'nuvemchat-nov-2025' }); 
+    window.slideComments = slideComments;
+    console.log('✅ Sistema de comentarios cargado');
+  } catch(e) {
+    console.error('❌ Error cargando comentarios:', e);
+  }
+});
+</script>
+</body>
+</html>
