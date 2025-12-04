@@ -16,6 +16,34 @@
         #root { display: none; }
         body.authenticated #root { display: block; }
         body.authenticated #auth-overlay { display: none !important; }
+        body.authenticated #auth-loading { display: none !important; }
+        body.auth-ready #auth-loading { display: none !important; }
+        
+        /* Loading inicial mientras verifica auth */
+        #auth-loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #010B23;
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        #auth-loading .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #2d3748;
+            border-top-color: #59A9FF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        #auth-loading p {
+            color: #6B7280;
+            margin-top: 16px;
+            font-size: 14px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         
         /* Menú de navegación entre reportes */
         .report-nav {
@@ -147,7 +175,13 @@
     </style>
 </head>
 <body>
-    <!-- PANTALLA DE LOGIN - Se oculta cuando el usuario está autenticado -->
+    <!-- Loading mientras verifica autenticación -->
+    <div id="auth-loading">
+        <div class="spinner"></div>
+        <p>Verificando acceso...</p>
+    </div>
+    
+    <!-- PANTALLA DE LOGIN - Solo se muestra si NO está autenticado -->
     <div id="auth-overlay" style="
       position: fixed;
       top: 0;
@@ -156,7 +190,7 @@
       bottom: 0;
       background: linear-gradient(135deg, #010B23 0%, #1a1f3a 50%, #010B23 100%);
       z-index: 99999;
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
       flex-direction: column;
@@ -2363,6 +2397,11 @@ function doGoogleLogin() {
 
 // Verificar autenticación al cargar
 auth.onAuthStateChanged((user) => {
+  // Ocultar loading, ya sabemos el estado
+  document.body.classList.add('auth-ready');
+  const loadingEl = document.getElementById('auth-loading');
+  if (loadingEl) loadingEl.style.display = 'none';
+  
   if (user) {
     const email = user.email;
     const domain = email.split('@')[1];
@@ -2375,8 +2414,11 @@ auth.onAuthStateChanged((user) => {
       denyAccess(email);
     }
   } else {
+    // No está logueado - mostrar pantalla de login
     currentUser = null;
     document.body.classList.remove('authenticated');
+    const overlay = document.getElementById('auth-overlay');
+    if (overlay) overlay.style.display = 'flex';
   }
 });
 
